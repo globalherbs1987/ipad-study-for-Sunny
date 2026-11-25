@@ -721,6 +721,68 @@
       border-color: var(--ink);
     }
 
+
+    /* 累计完成情况汇总卡片 */
+    .summary-panel {
+      margin-top: 20px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px 18px;
+    }
+    .summary-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink-secondary);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .kpi-box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .kpi-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .kpi-lbl {
+      font-size: 11px;
+      color: var(--ink-muted);
+      margin-top: 2px;
+    }
+    .history-list {
+      max-height: 150px;
+      overflow-y: auto;
+      border-top: 1px dashed var(--line);
+      padding-top: 8px;
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+    }
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(24,24,27,0.04);
+      gap: 8px;
+    }
+    .history-item:last-child { border-bottom: none; }
+    @media (max-width: 600px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
     .hidden { display: none !important; }
 
     @media (max-width: 600px) {
@@ -859,6 +921,7 @@
         </p>
       </div>
       <div class="report-sheet" id="finalReportBox"></div>
+      <div class="summary-panel" id="stage4SummaryBox"></div>
       <div class="feedback" id="syncFeedback"></div>
       <div style="margin-top:22px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
         <button class="btn btn-soft" id="copyReportBtn" type="button">复制今日学情战报</button>
@@ -885,7 +948,8 @@
         </div>
       </div>
 
-      <div id="parentSettingsView" class="hidden">
+      <div id="parentSettingsView" class="hidden" style="max-height:74vh; overflow-y:auto; padding-right:2px;">
+        <div class="summary-panel" id="parentSummaryBox" style="margin-top:0; margin-bottom:16px;"></div>
         <div class="form-row">
           <label for="daySelect">当前厚海英语 WW3 关卡</label>
           <select id="daySelect"></select>
@@ -3415,6 +3479,7 @@
       parentPin: "0000",
       soundOn: true,
       stage: 1,
+      transitionLock: false,
       mathStreak: 0,
       mathResets: 0,
       mathWrongList: [],
@@ -3425,48 +3490,108 @@
       recSeconds: 0,
       recTimerId: null,
       recognition: null,
+      accumulatedFinal: "",
       transcript: "",
       readingAttempts: 0,
       readingSeconds: 0,
       quizWrongCount: 0,
       quizAnswers: {},
-      webhookUrl: "",
-      lastReportText: "",
       vocabQueue: [],
       vocabIdx: 0,
       vocabSubStep: 0,
-      vocabErrors: {}
+      vocabErrors: {},
+      webhookUrl: "",
+      lastReportText: "",
+      completedDays: [],
+      weakWords: [],
+      historyLogs: [],
+      pendingSync: []
     };
 
-    state.completedDays = [];
-    state.weakWords = [];
     function todayKey() {
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     }
-    try {
-      const savedDay = parseInt(localStorage.getItem("ww3_day"), 10);
-      if (!isNaN(savedDay) && CURRICULUM.some(c => c.day === savedDay)) state.currentDay = savedDay;
-      const savedPin = localStorage.getItem("ww3_pin");
-      if (savedPin && /^\d{4}$/.test(savedPin)) state.parentPin = savedPin;
-      const savedDone = JSON.parse(localStorage.getItem("ww3_done_days") || "[]");
-      if (Array.isArray(savedDone)) state.completedDays = savedDone;
-      const savedWeak = JSON.parse(localStorage.getItem("ww3_weak_words") || "[]");
-      if (Array.isArray(savedWeak)) state.weakWords = savedWeak;
-      const savedHook = localStorage.getItem("ww3_webhook") || "";
-      if (savedHook.startsWith("https://")) state.webhookUrl = savedHook;
-      const lastPassDate = localStorage.getItem("ww3_last_pass_date");
-      const lastPassDay = parseInt(localStorage.getItem("ww3_last_pass_day"), 10);
-      // 跨天后自动推进到下一关
-      if (lastPassDate && lastPassDate !== todayKey() && !isNaN(lastPassDay) && state.currentDay === lastPassDay && lastPassDay < 47) {
-        state.currentDay = lastPassDay + 1;
-        localStorage.setItem("ww3_day", String(state.currentDay));
-      }
-    } catch (e) {}
 
     const $ = id => document.getElementById(id);
 
-    // 轻量合成钢琴清脆提示音（无需加载外部音频文件）
+    function saveSessionCheckpoint() {
+      try {
+        const snap = {
+          date: todayKey(),
+          day: state.currentDay,
+          stage: state.stage,
+          mathStreak: state.mathStreak,
+          mathResets: state.mathResets,
+          mathWrongList: state.mathWrongList,
+          readingAttempts: state.readingAttempts,
+          readingSeconds: state.readingSeconds,
+          transcript: state.transcript,
+          quizWrongCount: state.quizWrongCount,
+          vocabIdx: state.vocabIdx,
+          vocabSubStep: state.vocabSubStep,
+          vocabErrors: state.vocabErrors
+        };
+        localStorage.setItem("ww3_daily_checkpoint", JSON.stringify(snap));
+      } catch (e) {}
+    }
+
+    function clearSessionCheckpoint() {
+      try { localStorage.removeItem("ww3_daily_checkpoint"); } catch (e) {}
+    }
+
+    function loadPersistentData() {
+      try {
+        const savedDay = parseInt(localStorage.getItem("ww3_day"), 10);
+        if (!isNaN(savedDay) && CURRICULUM.some(c => c.day === savedDay)) state.currentDay = savedDay;
+        const savedPin = localStorage.getItem("ww3_pin");
+        if (savedPin && /^\d{4}$/.test(savedPin)) state.parentPin = savedPin;
+        const savedDone = JSON.parse(localStorage.getItem("ww3_done_days") || "[]");
+        if (Array.isArray(savedDone)) state.completedDays = savedDone;
+        const savedWeak = JSON.parse(localStorage.getItem("ww3_weak_words") || "[]");
+        if (Array.isArray(savedWeak)) state.weakWords = savedWeak;
+        const savedHook = localStorage.getItem("ww3_webhook") || "";
+        if (savedHook.startsWith("https://")) state.webhookUrl = savedHook;
+        const savedHist = JSON.parse(localStorage.getItem("ww3_history_logs") || "[]");
+        if (Array.isArray(savedHist)) state.historyLogs = savedHist;
+        const savedPending = JSON.parse(localStorage.getItem("ww3_pending_sync") || "[]");
+        if (Array.isArray(savedPending)) state.pendingSync = savedPending;
+      } catch (e) {}
+    }
+
+    // 检查是否跨过午夜到了新的一天（兼容 iPad 后台常驻不刷新页面的情况）
+    function checkDayRollover() {
+      try {
+        const lastPassDate = localStorage.getItem("ww3_last_pass_date");
+        const lastPassDay = parseInt(localStorage.getItem("ww3_last_pass_day"), 10);
+        if (lastPassDate && lastPassDate !== todayKey() && !isNaN(lastPassDay)) {
+          if (state.currentDay === lastPassDay && lastPassDay < 47) {
+            state.currentDay = lastPassDay + 1;
+            localStorage.setItem("ww3_day", String(state.currentDay));
+          }
+          localStorage.removeItem("ww3_last_pass_date");
+          clearSessionCheckpoint();
+          if (!state.isRecording) {
+            resetAll(false);
+          }
+          return true;
+        }
+        // 若未通关但跨天了，也清理昨日半途缓存并更新顶栏日期
+        const rawSnap = localStorage.getItem("ww3_daily_checkpoint");
+        if (rawSnap) {
+          const snap = JSON.parse(rawSnap);
+          if (snap && snap.date && snap.date !== todayKey()) {
+            clearSessionCheckpoint();
+            if (!state.isRecording) resetAll(false);
+            return true;
+          }
+        }
+        updateHeader();
+      } catch (e) {}
+      return false;
+    }
+
+    // 轻量合成钢琴清脆提示音
     let audioCtx = null;
     function playTone(kind) {
       if (!state.soundOn) return;
@@ -3512,7 +3637,8 @@
       });
       $("navSub1").textContent = state.stage > 1 ? "已完成" : `${state.mathStreak} / 10`;
       $("navSub2").textContent = state.stage > 2 ? "已完成" : (state.stage === 2 ? "进行中" : "待开启");
-      $("navSub3").textContent = state.stage > 3 ? "已完成" : (state.stage === 3 ? `${Math.min(state.vocabIdx + 1, state.vocabQueue.length)} / ${state.vocabQueue.length}` : "待开启");
+      const vTotal = Math.max(state.vocabQueue.length, 2);
+      $("navSub3").textContent = state.stage > 3 ? "已完成" : (state.stage === 3 ? `${Math.min(state.vocabIdx + 1, vTotal)} / ${vTotal}` : "待开启");
 
       $("stage1").classList.toggle("hidden", state.stage !== 1);
       $("stage2").classList.toggle("hidden", state.stage !== 2);
@@ -3532,7 +3658,6 @@
     }
 
     function nextMathQuestion() {
-      // 贴合北京三年级：两位数进退位加减、两位数乘一位数、表内除加/乘减两步混合
       const mode = Math.floor(Math.random() * 5);
       let a, b, c, expr, ans, tag;
       if (mode === 0) {
@@ -3581,19 +3706,26 @@
     }
 
     function submitMath() {
+      if (state.transitionLock || state.stage !== 1) return;
       const raw = $("mathInput").value.replace(/[^\d-]/g, "").trim();
       if (raw === "") return;
       const num = parseInt(raw, 10);
+      if (isNaN(num)) return;
       const fb = $("mathFeedback");
       if (num === state.mathTarget) {
         state.mathStreak++;
         playTone("ok");
         fb.className = "feedback show ok";
         fb.textContent = `正确 · 连对 ${state.mathStreak} / 10`;
+        saveSessionCheckpoint();
         if (state.mathStreak >= 10) {
+          state.transitionLock = true;
+          renderMathDots();
           playTone("win");
           setTimeout(() => {
+            state.transitionLock = false;
             state.stage = 2;
+            saveSessionCheckpoint();
             initStage2();
           }, 420);
         } else {
@@ -3603,6 +3735,7 @@
         state.mathResets++;
         state.mathWrongList.push(`${state.mathOpText}=${num}(应为${state.mathTarget})`);
         state.mathStreak = 0;
+        saveSessionCheckpoint();
         playTone("err");
         const arena = $("mathArena");
         arena.classList.remove("shake");
@@ -3614,7 +3747,12 @@
       }
     }
 
-    // ---------- 第二关：厚海原版朗读与理解 ----------
+    // ---------- 第二关：厚海原版朗读与理解（防卡死加固版） ----------
+    function getMinReadSeconds(lesson) {
+      const wc = lesson.passage.trim().split(/\s+/).length;
+      return Math.max(11, Math.min(18, Math.round(wc * 0.13)));
+    }
+
     function initStage2() {
       const lesson = getCurrentLesson();
       $("readingTitle").textContent = `第二关 · ${lesson.unit}`;
@@ -3623,14 +3761,77 @@
       $("readingPassage").textContent = lesson.passage;
       $("readingQuizBlock").classList.add("hidden");
       $("readingFeedback").className = "feedback";
+      $("recFallbackBtn").classList.add("hidden");
+      $("recToggleBtn").classList.remove("recording");
+      $("recToggleBtn").textContent = "🎤 点击开始朗读";
+      $("waveBars").classList.remove("active");
       $("recTranscript").textContent = "朗读时的语音识别会同步显示在这里";
       $("recTimer").textContent = "准备就绪";
+      state.isRecording = false;
+      state.accumulatedFinal = "";
       state.transcript = "";
       state.quizAnswers = {};
       updateNav();
     }
 
     let lastRecTapAt = 0;
+    function stopSpeechSafely() {
+      const recRef = state.recognition;
+      state.recognition = null;
+      if (recRef) {
+        recRef.onend = null;
+        recRef.onresult = null;
+        recRef.onerror = null;
+        setTimeout(() => {
+          try {
+            if (typeof recRef.abort === "function") recRef.abort();
+            else if (typeof recRef.stop === "function") recRef.stop();
+          } catch (e) {}
+        }, 0);
+      }
+    }
+
+    function startSpeechChunk() {
+      if (!state.isRecording) return;
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) return;
+      try {
+        const rec = new SpeechRec();
+        rec.lang = "en-US";
+        rec.continuous = false;
+        rec.interimResults = true;
+        rec.onresult = ev => {
+          if (!state.isRecording) return;
+          let interim = "";
+          for (let i = ev.resultIndex || 0; i < ev.results.length; i++) {
+            const piece = ev.results[i][0].transcript;
+            if (ev.results[i].isFinal) {
+              state.accumulatedFinal += piece + " ";
+            } else {
+              interim += piece + " ";
+            }
+          }
+          state.transcript = (state.accumulatedFinal + interim).trim();
+          if (state.transcript) {
+            $("recTranscript").textContent = state.transcript;
+          }
+        };
+        rec.onerror = () => {};
+        rec.onend = () => {
+          // 若孩子仍在朗读中（只是换气停顿），自动无缝续接下一句识别
+          if (state.isRecording && state.recognition === rec) {
+            setTimeout(() => {
+              if (state.isRecording) startSpeechChunk();
+            }, 120);
+          }
+        };
+        rec.start();
+        state.recognition = rec;
+      } catch (err) {
+        state.recognition = null;
+      }
+    }
+
     function finishRecordingNow() {
       if (!state.isRecording) return;
       const btn = $("recToggleBtn");
@@ -3641,29 +3842,26 @@
       $("recFallbackBtn").classList.add("hidden");
       btn.classList.remove("recording");
       btn.textContent = "🎤 点击开始朗读";
-      const recRef = state.recognition;
-      state.recognition = null;
-      if (recRef) {
-        setTimeout(() => {
-          try { recRef.abort ? recRef.abort() : recRef.stop(); } catch (e) {}
-        }, 0);
-      }
+      stopSpeechSafely();
       evaluateReading();
     }
 
     function toggleRecording(e) {
       if (e && e.type === "touchend") e.preventDefault();
       const now = Date.now();
-      if (now - lastRecTapAt < 350) return;
+      if (now - lastRecTapAt < 320) return;
       lastRecTapAt = now;
 
       const btn = $("recToggleBtn");
       const wave = $("waveBars");
       const fb = $("readingFeedback");
+      const minSec = getMinReadSeconds(getCurrentLesson());
+
       if (!state.isRecording) {
         state.isRecording = true;
         state.readingAttempts++;
         state.recSeconds = 0;
+        state.accumulatedFinal = "";
         state.transcript = "";
         fb.className = "feedback";
         $("recFallbackBtn").classList.add("hidden");
@@ -3673,35 +3871,15 @@
         $("recTimer").textContent = "00:00";
         $("recTranscript").textContent = "正在计时朗读，读完点上方红色按钮结束";
 
-        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRec) {
-          try {
-            const rec = new SpeechRec();
-            rec.lang = "en-US";
-            rec.continuous = false;
-            rec.interimResults = true;
-            rec.onresult = ev => {
-              let txt = "";
-              for (let i = 0; i < ev.results.length; i++) {
-                txt += ev.results[i][0].transcript + " ";
-              }
-              state.transcript = txt.trim();
-              $("recTranscript").textContent = state.transcript || "正在聆听...";
-            };
-            rec.onerror = () => {};
-            rec.start();
-            state.recognition = rec;
-          } catch (err) {
-            state.recognition = null;
-          }
-        }
+        startSpeechChunk();
+
         clearInterval(state.recTimerId);
         state.recTimerId = setInterval(() => {
           state.recSeconds++;
           const mm = String(Math.floor(state.recSeconds / 60)).padStart(2, "0");
           const ss = String(state.recSeconds % 60).padStart(2, "0");
           $("recTimer").textContent = `${mm}:${ss}`;
-          if (state.recSeconds >= 15) {
+          if (state.recSeconds >= minSec) {
             $("recFallbackBtn").classList.remove("hidden");
           }
         }, 1000);
@@ -3712,38 +3890,31 @@
 
     function evaluateReading() {
       const lesson = getCurrentLesson();
+      const minSec = getMinReadSeconds(lesson);
       const targetWords = lesson.passage.toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/).filter(w => w.length > 2);
       const uniqueTargets = Array.from(new Set(targetWords));
       const spoken = state.transcript.toLowerCase();
       const fb = $("readingFeedback");
 
-      if (state.transcript.length > 10) {
-        let hit = 0;
+      let hit = 0;
+      if (spoken.length > 5) {
         uniqueTargets.forEach(w => { if (spoken.includes(w)) hit++; });
-        const ratio = Math.round((hit / Math.max(uniqueTargets.length, 1)) * 100);
-        if (ratio >= 45 || state.recSeconds >= 18) {
-          state.readingSeconds = state.recSeconds;
-          playTone("ok");
-          fb.className = "feedback show ok";
-          fb.textContent = `朗读完成（用时 ${state.recSeconds} 秒，词汇识别率 ${ratio}%），请回答下方 2 道理解题`;
-          unlockQuiz();
-        } else {
-          playTone("err");
-          fb.className = "feedback show err";
-          fb.textContent = `识别到的句子还不够完整（${ratio}%），请再点按钮完整朗读一遍整段课文`;
-        }
+      }
+      const ratio = Math.round((hit / Math.max(uniqueTargets.length, 1)) * 100);
+
+      // 双通道平滑判定：只要语音匹配 >= 40%，或者实际朗读时长已达到本篇合理下限 minSec，即顺畅过关，绝不因 iPad 语音服务偶发掉字卡住孩子
+      if (ratio >= 40 || state.recSeconds >= minSec) {
+        state.readingSeconds = state.recSeconds;
+        saveSessionCheckpoint();
+        playTone("ok");
+        fb.className = "feedback show ok";
+        const detail = ratio > 0 ? `用时 ${state.recSeconds} 秒 · 识别率 ${ratio}%` : `用时 ${state.recSeconds} 秒`;
+        fb.textContent = `朗读完成（${detail}），请回答下方 2 道理解题`;
+        unlockQuiz();
       } else {
-        if (state.recSeconds >= 15) {
-          state.readingSeconds = state.recSeconds;
-          playTone("ok");
-          fb.className = "feedback show ok";
-          fb.textContent = `朗读完成（用时 ${state.recSeconds} 秒），请回答下方 2 道理解题`;
-          unlockQuiz();
-        } else {
-          playTone("err");
-          fb.className = "feedback show err";
-          fb.textContent = `朗读仅用时 ${state.recSeconds} 秒，整段大约需 20 秒以上，请完整读完再点结束`;
-        }
+        playTone("err");
+        fb.className = "feedback show err";
+        fb.textContent = `仅朗读了 ${state.recSeconds} 秒，整段大约需要 ${minSec} 秒以上，请点击按钮完整读完再结束`;
       }
     }
 
@@ -3780,22 +3951,34 @@
     }
 
     function submitQuiz() {
+      if (state.transitionLock || state.stage !== 2) return;
       const lesson = getCurrentLesson();
       const fb = $("quizFeedback");
+      let answeredCount = 0;
       let allCorrect = true;
       for (let i = 0; i < lesson.quiz.length; i++) {
+        if (typeof state.quizAnswers[i] === "number") answeredCount++;
         if (state.quizAnswers[i] !== lesson.quiz[i].ans) allCorrect = false;
       }
+      if (answeredCount < lesson.quiz.length) {
+        fb.className = "feedback show info";
+        fb.textContent = "请把 2 道理解题都选好后再提交哦";
+        return;
+      }
       if (allCorrect) {
+        state.transitionLock = true;
         playTone("win");
         fb.className = "feedback show ok";
         fb.textContent = "两题全对，进入最后一关：闭卷拼词";
         setTimeout(() => {
+          state.transitionLock = false;
           state.stage = 3;
-          initStage3();
-        }, 550);
+          initStage3(false);
+          saveSessionCheckpoint();
+        }, 520);
       } else {
         state.quizWrongCount++;
+        saveSessionCheckpoint();
         playTone("err");
         fb.className = "feedback show err";
         fb.textContent = "还有选项不太准确，回看上方原文核对一下吧";
@@ -3803,12 +3986,10 @@
     }
 
     // ---------- 第三关：三步防偷看闭卷背单词 ----------
-    function initStage3() {
-      const lesson = getCurrentLesson();
+    function buildVocabQueue(lesson) {
       const offsets = [1, 3, 7, 14, 30];
       const reviewWords = [];
       const seen = new Set(lesson.words.map(w => w.word.toLowerCase()));
-      // 优先加入家长设置的易错加练词
       state.weakWords.forEach(target => {
         const key = target.trim().toLowerCase();
         if (!key || seen.has(key)) return;
@@ -3833,13 +4014,23 @@
           });
         }
       });
-      state.vocabQueue = [
+      return [
         ...reviewWords,
         ...lesson.words.map(w => ({ ...w, isReview: false }))
       ];
-      state.vocabIdx = 0;
-      state.vocabSubStep = 0;
-      state.vocabErrors = {};
+    }
+
+    function initStage3(fromRestore) {
+      const lesson = getCurrentLesson();
+      state.vocabQueue = buildVocabQueue(lesson);
+      if (!fromRestore) {
+        state.vocabIdx = 0;
+        state.vocabSubStep = 0;
+        state.vocabErrors = {};
+      } else if (state.vocabIdx >= state.vocabQueue.length) {
+        state.vocabIdx = 0;
+        state.vocabSubStep = 0;
+      }
       renderVocabStep();
     }
 
@@ -3853,6 +4044,14 @@
           window.speechSynthesis.speak(u);
         } catch (e) {}
       }
+    }
+
+    function highlightTargetInSentence(sentence, word) {
+      const escaped = word.endsWith("y") && !word.includes(" ")
+        ? word.slice(0, -1).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?:y|ies)"
+        : word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[a-z]*";
+      const reg = new RegExp(`(${escaped})`, "i");
+      return sentence.replace(reg, "<mark>$1</mark>");
     }
 
     function buildSubstepBar(activeIdx) {
@@ -3873,6 +4072,7 @@
     function renderVocabStep() {
       updateNav();
       const item = state.vocabQueue[state.vocabIdx];
+      if (!item) return;
       $("vocabProgressPill").textContent = `${item.isReview ? "旧词复习" : "今日新词"} · ${state.vocabIdx + 1} / ${state.vocabQueue.length}`;
       $("vocabFeedback").className = "feedback";
       const body = $("vocabBody");
@@ -3882,8 +4082,7 @@
       if (state.vocabSubStep === 0) {
         const card = document.createElement("div");
         card.className = "sentence-focus";
-        const reg = new RegExp(`(${item.word}[a-z]*)`, "i");
-        card.innerHTML = item.ctx.replace(reg, "<mark>$1</mark>");
+        card.innerHTML = highlightTargetInSentence(item.ctx, item.word);
 
         const actions = document.createElement("div");
         actions.style.cssText = "display:flex; gap:12px; justify-content:center; flex-wrap:wrap;";
@@ -3899,6 +4098,7 @@
         nextBtn.textContent = "记住了，去选词义";
         nextBtn.addEventListener("click", () => {
           state.vocabSubStep = 1;
+          saveSessionCheckpoint();
           renderVocabStep();
         });
         actions.append(listenBtn, nextBtn);
@@ -3918,16 +4118,20 @@
           btn.style.textAlign = "center";
           btn.textContent = opt;
           btn.addEventListener("click", () => {
+            if (state.transitionLock) return;
             const fb = $("vocabFeedback");
             if (opt === item.cn) {
+              state.transitionLock = true;
               playTone("ok");
               btn.classList.add("selected");
               fb.className = "feedback show ok";
               fb.textContent = "词义正确，进入无提示闭卷拼写";
               setTimeout(() => {
+                state.transitionLock = false;
                 state.vocabSubStep = 2;
+                saveSessionCheckpoint();
                 renderVocabStep();
-              }, 480);
+              }, 420);
             } else {
               playTone("err");
               fb.className = "feedback show err";
@@ -3938,7 +4142,6 @@
         });
         body.append(card, grid);
       } else {
-        // 第3步：单屏完全遮蔽原词 + 实时字母格跳动
         const arena = document.createElement("div");
         arena.className = "spell-arena";
 
@@ -3946,9 +4149,13 @@
         cnEl.className = "spell-cn";
         cnEl.textContent = item.cn;
 
+        const cleanTarget = item.word.toLowerCase().replace(/\s+/g, "");
+        const hasSpace = item.word.includes(" ");
         const posEl = document.createElement("div");
         posEl.className = "spell-pos";
-        posEl.textContent = `${item.pos} · 共 ${item.word.length} 个字符`;
+        posEl.textContent = hasSpace
+          ? `${item.pos} · 词组共 ${cleanTarget.length} 个字母（空格可省）`
+          : `${item.pos} · 共 ${cleanTarget.length} 个字母`;
 
         const clozeEl = document.createElement("div");
         clozeEl.className = "spell-cloze";
@@ -3956,22 +4163,22 @@
 
         const tileRow = document.createElement("div");
         tileRow.className = "tile-row";
-        const tileEls = [];
+        const letterTileEls = [];
         for (let i = 0; i < item.word.length; i++) {
           const t = document.createElement("div");
           if (item.word[i] === " ") {
             t.className = "letter-tile space-tile";
           } else {
             t.className = "letter-tile";
+            letterTileEls.push(t);
           }
           tileRow.appendChild(t);
-          tileEls.push(t);
         }
 
         const inp = document.createElement("input");
         inp.type = "text";
         inp.className = "word-input-clean";
-        inp.maxLength = item.word.length + 2;
+        inp.maxLength = item.word.length + 3;
         inp.placeholder = "键盘输入每个字母";
         inp.setAttribute("autocomplete", "off");
         inp.setAttribute("autocorrect", "off");
@@ -3979,10 +4186,9 @@
         inp.setAttribute("spellcheck", "false");
 
         const syncTiles = () => {
-          const val = inp.value;
-          tileEls.forEach((el, idx) => {
-            if (item.word[idx] === " ") return;
-            const ch = val[idx] || "";
+          const lettersOnly = inp.value.replace(/\s+/g, "");
+          letterTileEls.forEach((el, idx) => {
+            const ch = lettersOnly[idx] || "";
             el.textContent = ch;
             el.classList.toggle("filled", Boolean(ch));
           });
@@ -4003,27 +4209,33 @@
         checkBtn.textContent = "确认拼写";
 
         const handleCheck = () => {
-          const val = inp.value.trim().toLowerCase();
-          if (!val) return;
+          if (state.transitionLock) return;
+          const typedClean = inp.value.trim().toLowerCase().replace(/\s+/g, "");
+          if (!typedClean) return;
           const fb = $("vocabFeedback");
-          if (val === item.word.toLowerCase()) {
+          if (typedClean === cleanTarget) {
+            state.transitionLock = true;
             playTone("ok");
             fb.className = "feedback show ok";
             fb.textContent = `拼写全对：${item.word}`;
             setTimeout(() => {
+              state.transitionLock = false;
               if (state.vocabIdx + 1 < state.vocabQueue.length) {
                 state.vocabIdx++;
                 state.vocabSubStep = 0;
+                saveSessionCheckpoint();
                 renderVocabStep();
               } else {
                 playTone("win");
                 state.stage = 4;
-                renderFinalReport();
+                renderFinalReport(false);
               }
-            }, 550);
+            }, 480);
           } else {
+            state.transitionLock = true;
             playTone("err");
             state.vocabErrors[item.word] = (state.vocabErrors[item.word] || 0) + 1;
+            saveSessionCheckpoint();
             fb.className = "feedback show err";
             fb.textContent = `差一点点，正确拼写是 ${item.word}，默记 2 秒后重新盲拼`;
             inp.value = "";
@@ -4031,12 +4243,13 @@
             inp.disabled = true;
             checkBtn.disabled = true;
             setTimeout(() => {
+              state.transitionLock = false;
               fb.className = "feedback show info";
               fb.textContent = "已隐藏提示，请重新独立拼出完整单词";
               inp.disabled = false;
               checkBtn.disabled = false;
               inp.focus();
-            }, 2400);
+            }, 2200);
           }
         };
 
@@ -4050,10 +4263,28 @@
       }
     }
 
-    // ---------- 第四屏：家长核验单 ----------
+    // ---------- 第四屏：通关印章 + 累计完成情况汇总看板 + 断网补发回传 ----------
     const DEFAULT_FORMSUBMIT_URL = "https://formsubmit.co/ajax/globalherbs1987@gmail.com";
-    function sendReportAuto(payload, fbEl) {
-      if (fbEl) {
+
+    function enqueuePendingSync(payload) {
+      try {
+        if (!state.pendingSync.some(p => p.submittedAt === payload.submittedAt)) {
+          state.pendingSync.push(payload);
+          if (state.pendingSync.length > 30) state.pendingSync.shift();
+          localStorage.setItem("ww3_pending_sync", JSON.stringify(state.pendingSync));
+        }
+      } catch (e) {}
+    }
+
+    function removePendingSync(submittedAt) {
+      try {
+        state.pendingSync = state.pendingSync.filter(p => p.submittedAt !== submittedAt);
+        localStorage.setItem("ww3_pending_sync", JSON.stringify(state.pendingSync));
+      } catch (e) {}
+    }
+
+    function sendReportAuto(payload, fbEl, isRetry) {
+      if (fbEl && !isRetry) {
         fbEl.className = "feedback show info";
         fbEl.textContent = "正在自动回传今日学情数据给 Gemini...";
       }
@@ -4065,14 +4296,16 @@
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload)
           }).then(() => {
+            removePendingSync(payload.submittedAt);
             if (fbEl) {
               fbEl.className = "feedback show ok";
               fbEl.textContent = "✓ 今日学情数据已自动回传";
             }
           }).catch(() => {
+            if (!payload.isTest) enqueuePendingSync(payload);
             if (fbEl) {
               fbEl.className = "feedback show err";
-              fbEl.textContent = "自动回传未发出（请检查网络），可点下方复制战报";
+              fbEl.textContent = "当前网络未发出，已存入待发队列（联网后自动补发），也可点下方复制战报";
             }
           });
         } catch (e) {}
@@ -4100,78 +4333,157 @@
             "理解题错题数": payload.quizWrongCount,
             "新学单词": payload.newWords,
             "易错拼写词": payload.vocabErrors,
+            "累计完成进度": `${state.completedDays.length} / 47 关`,
             "提交时间": payload.submittedAt
           })
         }).then(r => r.json()).then(res => {
-          if (fbEl) {
-            if (res && (res.success === "true" || res.success === true)) {
+          if (res && (res.success === "true" || res.success === true)) {
+            removePendingSync(payload.submittedAt);
+            if (fbEl) {
               fbEl.className = "feedback show ok";
-              fbEl.textContent = "✓ 今日学情已自动发回 Gemini（自动入表并生成分析）";
-            } else {
+              fbEl.textContent = "✓ 今日学情已自动发回 Gemini（自动入表并生成汇总分析）";
+            }
+          } else {
+            if (!payload.isTest) enqueuePendingSync(payload);
+            if (fbEl) {
               fbEl.className = "feedback show info";
-              fbEl.textContent = "首次启用：请去你的 Gmail 点一下 FormSubmit 发来的绿色 Activate Form 激活按钮，之后每天全自动回传";
+              fbEl.textContent = "首次启用请确认已在 Gmail 点过 Activate Form，未发记录已自动保留待补发";
             }
           }
         }).catch(() => {
+          if (!payload.isTest) enqueuePendingSync(payload);
           if (fbEl) {
             fbEl.className = "feedback show err";
-            fbEl.textContent = "回传被拦截（请确认家长手机网页白名单已添加 formsubmit.co）";
+            fbEl.textContent = "暂存本地待补发（请确认家长手机网页白名单已添加 formsubmit.co）";
           }
         });
       } catch (err) {
-        if (fbEl) {
-          fbEl.className = "feedback show err";
-          fbEl.textContent = "回传异常，可点下方复制战报";
-        }
+        if (!payload.isTest) enqueuePendingSync(payload);
       }
     }
 
-    function renderFinalReport() {
+    function flushPendingSync() {
+      if (!state.pendingSync.length) return;
+      const copy = [...state.pendingSync];
+      copy.forEach(item => sendReportAuto(item, null, true));
+    }
+
+    function buildSummaryHTML() {
+      const doneCount = state.completedDays.length;
+      const totalLogs = state.historyLogs.length;
+      const avgResets = totalLogs
+        ? (state.historyLogs.reduce((acc, x) => acc + (Number(x.mathResets) || 0), 0) / totalLogs).toFixed(1)
+        : "0.0";
+      const masteredWords = doneCount * 2;
+
+      const weakFreq = {};
+      state.historyLogs.forEach(log => {
+        if (log.rawVocabErrors && typeof log.rawVocabErrors === "object") {
+          Object.keys(log.rawVocabErrors).forEach(w => {
+            weakFreq[w] = (weakFreq[w] || 0) + log.rawVocabErrors[w];
+          });
+        }
+      });
+      const topWeak = Object.entries(weakFreq).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const weakLine = topWeak.length
+        ? `累计高频易错词：${topWeak.map(([w, n]) => `${w}(${n}次)`).join("、")}`
+        : "累计高频易错词：暂无（盲拼准确率 100%）";
+
+      const recentRows = state.historyLogs.slice(-5).reverse().map(log =>
+        `<div class="history-item"><span>${log.date} · ${log.day}</span><span>口算归零 ${log.mathResets} 次 · 朗读 ${log.readingSeconds}s</span></div>`
+      ).join("") || `<div style="padding:4px 0; color:var(--ink-muted);">完成首日闯关后，这里会自动累计每日历史记录</div>`;
+
+      return `
+        <div class="summary-title">
+          <span>累计完成情况汇总</span>
+          <span style="color:var(--sage);">总进度 ${doneCount} / 47 关</span>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-box"><div class="kpi-val">${totalLogs}</div><div class="kpi-lbl">累计打卡(次)</div></div>
+          <div class="kpi-box"><div class="kpi-val">${doneCount}</div><div class="kpi-lbl">已通课次</div></div>
+          <div class="kpi-box"><div class="kpi-val">${masteredWords}</div><div class="kpi-lbl">已掌握新词</div></div>
+          <div class="kpi-box"><div class="kpi-val">${avgResets}</div><div class="kpi-lbl">场均口算归零</div></div>
+        </div>
+        <div style="font-size:12.5px; color:var(--ink-secondary); margin-bottom:8px;">${weakLine}</div>
+        <div class="history-list">${recentRows}</div>
+      `;
+    }
+
+    function renderFinalReport(fromSameDayRestore) {
       updateNav();
       const lesson = getCurrentLesson();
-      try {
-        if (!state.completedDays.includes(lesson.day)) {
-          state.completedDays.push(lesson.day);
-          localStorage.setItem("ww3_done_days", JSON.stringify(state.completedDays));
-        }
-        localStorage.setItem("ww3_last_pass_date", todayKey());
-        localStorage.setItem("ww3_last_pass_day", String(lesson.day));
-      } catch (e) {}
       const newWords = lesson.words.map(w => w.word).join("、");
       const errWords = Object.keys(state.vocabErrors);
       const errText = errWords.length ? errWords.map(w => `${w}（重拼 ${state.vocabErrors[w]} 次）`).join("、") : "全部一次盲拼全对";
 
+      let payload = null;
+      if (fromSameDayRestore) {
+        try {
+          payload = JSON.parse(localStorage.getItem("ww3_today_report_json") || "null");
+        } catch (e) { payload = null; }
+      }
+
+      if (!payload) {
+        try {
+          if (!state.completedDays.includes(lesson.day)) {
+            state.completedDays.push(lesson.day);
+            localStorage.setItem("ww3_done_days", JSON.stringify(state.completedDays));
+          }
+          localStorage.setItem("ww3_last_pass_date", todayKey());
+          localStorage.setItem("ww3_last_pass_day", String(lesson.day));
+        } catch (e) {}
+
+        payload = {
+          date: todayKey(),
+          day: `Day ${String(lesson.day).padStart(2, "0")}`,
+          unit: lesson.unit,
+          mathResets: state.mathResets,
+          mathWrong: state.mathWrongList.join("；") || "无",
+          readingSeconds: state.readingSeconds,
+          readingAttempts: state.readingAttempts,
+          transcript: state.transcript || "（计时朗读模式）",
+          quizWrongCount: state.quizWrongCount,
+          newWords: newWords,
+          vocabErrors: errText,
+          rawVocabErrors: { ...state.vocabErrors },
+          submittedAt: new Date().toLocaleString("zh-CN")
+        };
+
+        try {
+          state.historyLogs.push(payload);
+          if (state.historyLogs.length > 180) state.historyLogs.shift();
+          localStorage.setItem("ww3_history_logs", JSON.stringify(state.historyLogs));
+          localStorage.setItem("ww3_today_report_json", JSON.stringify(payload));
+          clearSessionCheckpoint();
+        } catch (e) {}
+      }
+
       $("finalReportBox").innerHTML = `
-        <div class="report-row"><span class="report-key">完成日期与课次</span><span class="report-val">${$("todayDatePill").textContent} · Day ${String(lesson.day).padStart(2, "0")} (${lesson.unit})</span></div>
-        <div class="report-row"><span class="report-key">三年级口算 10 连对</span><span class="report-val">已通过（中途归零 ${state.mathResets} 次）</span></div>
-        <div class="report-row"><span class="report-key">厚海原版朗读与理解</span><span class="report-val">已通过（用时 ${state.readingSeconds} 秒 · 理解错 ${state.quizWrongCount} 次）</span></div>
-        <div class="report-row"><span class="report-key">今日掌握核心词</span><span class="report-val">${newWords}</span></div>
-        <div class="report-row"><span class="report-key">盲拼准确度记录</span><span class="report-val">${errText}</span></div>
+        <div class="report-row"><span class="report-key">完成日期与课次</span><span class="report-val">${payload.date} · ${payload.day} (${payload.unit})</span></div>
+        <div class="report-row"><span class="report-key">三年级口算 10 连对</span><span class="report-val">已通过（中途归零 ${payload.mathResets} 次）</span></div>
+        <div class="report-row"><span class="report-key">厚海原版朗读与理解</span><span class="report-val">已通过（用时 ${payload.readingSeconds} 秒 · 理解错 ${payload.quizWrongCount} 次）</span></div>
+        <div class="report-row"><span class="report-key">今日掌握核心词</span><span class="report-val">${payload.newWords}</span></div>
+        <div class="report-row"><span class="report-key">盲拼准确度记录</span><span class="report-val">${payload.vocabErrors}</span></div>
       `;
 
-      const payload = {
-        date: todayKey(),
-        day: `Day ${String(lesson.day).padStart(2, "0")}`,
-        unit: lesson.unit,
-        mathResets: state.mathResets,
-        mathWrong: state.mathWrongList.join("；") || "无",
-        readingSeconds: state.readingSeconds,
-        readingAttempts: state.readingAttempts,
-        transcript: state.transcript || "（计时朗读模式）",
-        quizWrongCount: state.quizWrongCount,
-        newWords: newWords,
-        vocabErrors: errText,
-        submittedAt: new Date().toLocaleString("zh-CN")
-      };
+      $("stage4SummaryBox").innerHTML = buildSummaryHTML();
+
       state.lastReportText = [
         `【每日闯关学情战报】${payload.date} | ${payload.day} ${payload.unit}`,
+        `- 累计完成总进度：${state.completedDays.length} / 47 关（累计打卡 ${state.historyLogs.length} 次）`,
         `- 口算10连对：重置 ${payload.mathResets} 次（错题：${payload.mathWrong}）`,
         `- 课文朗读：用时 ${payload.readingSeconds} 秒，尝试 ${payload.readingAttempts} 次，理解题错 ${payload.quizWrongCount} 次`,
         `- 新学单词：${payload.newWords}`,
         `- 盲拼记录：${payload.vocabErrors}`
       ].join("\n");
 
-      sendReportAuto(payload, $("syncFeedback"));
+      if (!fromSameDayRestore) {
+        sendReportAuto(payload, $("syncFeedback"), false);
+      } else {
+        $("syncFeedback").className = "feedback show ok";
+        $("syncFeedback").textContent = "✓ 今日已完成闯关（明早打开将自动进入下一课）";
+        flushPendingSync();
+      }
     }
 
     // ---------- 家长设置与声音开关 ----------
@@ -4188,6 +4500,7 @@
       });
       $("weakWordsInput").value = state.weakWords.join(", ");
       $("webhookInput").value = state.webhookUrl;
+      $("parentSummaryBox").innerHTML = buildSummaryHTML();
     }
 
     $("soundToggleBtn").addEventListener("click", () => {
@@ -4201,6 +4514,7 @@
       $("parentSettingsView").classList.add("hidden");
       $("parentPinInput").value = "";
       $("pinFeedback").className = "feedback";
+      $("testSyncFeedback").className = "feedback";
       $("parentModal").classList.add("open");
     });
     $("closeParentBtn1").addEventListener("click", () => $("parentModal").classList.remove("open"));
@@ -4218,6 +4532,7 @@
     $("testSyncBtn").addEventListener("click", () => {
       const lesson = getCurrentLesson();
       sendReportAuto({
+        isTest: true,
         date: todayKey(),
         day: `Day ${String(lesson.day).padStart(2, "0")}（通道激活测试）`,
         unit: lesson.unit,
@@ -4230,13 +4545,14 @@
         newWords: lesson.words.map(w => w.word).join("、"),
         vocabErrors: "无",
         submittedAt: new Date().toLocaleString("zh-CN")
-      }, $("testSyncFeedback"));
+      }, $("testSyncFeedback"), false);
     });
     $("saveParentBtn").addEventListener("click", () => {
       const chosenDay = parseInt($("daySelect").value, 10);
       const newPin = $("newPinInput").value.trim();
       const rawWeak = $("weakWordsInput").value.split(/[,，\s]+/).map(s => s.trim()).filter(Boolean);
       const hookVal = $("webhookInput").value.trim();
+      const dayChanged = chosenDay !== state.currentDay;
       state.currentDay = chosenDay;
       state.weakWords = rawWeak;
       if (hookVal.startsWith("https://") || hookVal === "") {
@@ -4246,16 +4562,25 @@
         localStorage.setItem("ww3_day", String(chosenDay));
         localStorage.setItem("ww3_weak_words", JSON.stringify(rawWeak));
         localStorage.setItem("ww3_webhook", state.webhookUrl);
+        if (dayChanged) {
+          localStorage.removeItem("ww3_last_pass_date");
+          localStorage.removeItem("ww3_today_report_json");
+          clearSessionCheckpoint();
+        }
       } catch (e) {}
       if (/^\d{4}$/.test(newPin)) {
         state.parentPin = newPin;
         try { localStorage.setItem("ww3_pin", newPin); } catch (e) {}
       }
       $("parentModal").classList.remove("open");
-      resetAll();
+      resetAll(true);
     });
 
-    function resetAll() {
+    function resetAll(manualRestart) {
+      stopSpeechSafely();
+      clearInterval(state.recTimerId);
+      state.isRecording = false;
+      state.transitionLock = false;
       state.stage = 1;
       state.mathStreak = 0;
       state.mathResets = 0;
@@ -4263,8 +4588,61 @@
       state.readingAttempts = 0;
       state.readingSeconds = 0;
       state.quizWrongCount = 0;
+      if (manualRestart) {
+        try {
+          localStorage.removeItem("ww3_today_report_json");
+          clearSessionCheckpoint();
+        } catch (e) {}
+      }
       $("mathFeedback").className = "feedback";
       updateHeader();
+      nextMathQuestion();
+    }
+
+    function bootApp() {
+      loadPersistentData();
+      checkDayRollover();
+      updateHeader();
+      flushPendingSync();
+
+      // 1) 如果今天已经通关，锁屏或切后台重开直接展示今日通关印章与汇总页，绝不让孩子白做重来
+      try {
+        const lastPassDate = localStorage.getItem("ww3_last_pass_date");
+        const lastPassDay = parseInt(localStorage.getItem("ww3_last_pass_day"), 10);
+        if (lastPassDate === todayKey() && lastPassDay === state.currentDay && localStorage.getItem("ww3_today_report_json")) {
+          state.stage = 4;
+          renderFinalReport(true);
+          return;
+        }
+        // 2) 如果今天做到第 2 关或第 3 关中途锁屏重开，自动恢复当天进度
+        const rawSnap = localStorage.getItem("ww3_daily_checkpoint");
+        if (rawSnap) {
+          const snap = JSON.parse(rawSnap);
+          if (snap && snap.date === todayKey() && snap.day === state.currentDay) {
+            state.mathStreak = snap.mathStreak || 0;
+            state.mathResets = snap.mathResets || 0;
+            state.mathWrongList = Array.isArray(snap.mathWrongList) ? snap.mathWrongList : [];
+            state.readingAttempts = snap.readingAttempts || 0;
+            state.readingSeconds = snap.readingSeconds || 0;
+            state.transcript = snap.transcript || "";
+            state.quizWrongCount = snap.quizWrongCount || 0;
+            state.vocabIdx = snap.vocabIdx || 0;
+            state.vocabSubStep = snap.vocabSubStep || 0;
+            state.vocabErrors = snap.vocabErrors || {};
+            if (snap.stage === 2) {
+              state.stage = 2;
+              initStage2();
+              return;
+            }
+            if (snap.stage === 3) {
+              state.stage = 3;
+              initStage3(true);
+              return;
+            }
+          }
+        }
+      } catch (e) {}
+
       nextMathQuestion();
     }
 
@@ -4280,7 +4658,7 @@
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
           $("syncFeedback").className = "feedback show ok";
-          $("syncFeedback").textContent = "已复制今日学情战报，可直接粘贴发给 Gemini 分析";
+          $("syncFeedback").textContent = "已复制今日学情与汇总战报，可直接粘贴发给 Gemini 分析";
         }).catch(() => {});
       } else {
         const ta = document.createElement("textarea");
@@ -4290,13 +4668,23 @@
         try { document.execCommand("copy"); } catch (e) {}
         document.body.removeChild(ta);
         $("syncFeedback").className = "feedback show ok";
-        $("syncFeedback").textContent = "已复制今日学情战报";
+        $("syncFeedback").textContent = "已复制今日学情与汇总战报";
       }
     });
-    $("restartTodayBtn").addEventListener("click", resetAll);
+    $("restartTodayBtn").addEventListener("click", () => resetAll(true));
 
-    updateHeader();
-    nextMathQuestion();
+    // 监听 iPad 锁屏唤醒与跨天自动推进
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        checkDayRollover();
+        flushPendingSync();
+      }
+    });
+    window.addEventListener("focus", () => {
+      checkDayRollover();
+    });
+
+    bootApp();
   </script>
 </body>
 </html>
