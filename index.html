@@ -1,0 +1,4112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>每日闯关 · 厚海英语 WW3</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="每日闯关" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%2318181B'/%3E%3Cg transform='translate(42,42) scale(4)' fill='none' stroke='%23FFFFFF' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20'/%3E%3C/g%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #F7F7F4;
+      --surface: #FFFFFF;
+      --surface-subtle: #FBFBFA;
+      --paper: #FAF8F4;
+      --ink: #18181B;
+      --ink-secondary: #52525B;
+      --ink-muted: #A1A1AA;
+      --accent: #2563EB;
+      --accent-soft: #EFF6FF;
+      --sage: #10B981;
+      --sage-soft: #ECFDF5;
+      --coral: #EF4444;
+      --coral-soft: #FEF2F2;
+      --amber: #F59E0B;
+      --amber-soft: #FFFBEB;
+      --line: rgba(24, 24, 27, 0.07);
+      --line-strong: rgba(24, 24, 27, 0.13);
+      --shadow-card: 0 24px 60px -16px rgba(24, 24, 27, 0.06), 0 2px 8px rgba(24, 24, 27, 0.02);
+      --radius-xl: 28px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* 彻底隐藏数字输入框自带上下微调箭头 */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .app-shell {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 24px 20px 56px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* 极简顶栏：无边框悬浮呼吸感 */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 4px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--ink);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(24, 24, 27, 0.12);
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      line-height: 1.25;
+    }
+    .brand-sub {
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+      margin-top: 2px;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .meta-pill {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      background: rgba(24, 24, 27, 0.04);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
+    }
+    .icon-toggle {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink-secondary);
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s ease;
+    }
+    .icon-toggle:hover {
+      border-color: var(--line-strong);
+      color: var(--ink);
+    }
+
+    /* 极简三段式胶囊进度条 */
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: rgba(24, 24, 27, 0.035);
+      padding: 5px;
+      border-radius: 18px;
+    }
+    .step-item {
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      transition: all 0.22s ease;
+      color: var(--ink-secondary);
+    }
+    .step-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(24, 24, 27, 0.07);
+      color: var(--ink-secondary);
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .step-label {
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .step-sub {
+      font-size: 11.5px;
+      color: var(--ink-muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .step-item.active {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 2px 8px rgba(24, 24, 27, 0.06);
+    }
+    .step-item.active .step-num {
+      background: var(--ink);
+      color: #fff;
+    }
+    .step-item.active .step-sub {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .step-item.done {
+      color: #059669;
+    }
+    .step-item.done .step-num {
+      background: var(--sage);
+      color: #fff;
+    }
+    .step-item.done .step-sub {
+      color: #059669;
+      font-weight: 600;
+    }
+
+    /* 主画布卡片：大留白、轻阴影 */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      padding: 36px 40px 40px;
+      box-shadow: var(--shadow-card);
+      transition: opacity 0.2s ease;
+    }
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      letter-spacing: 0.02em;
+    }
+    .card-title-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    /* 按钮系统 */
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 28px;
+      font-size: 15.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s ease, background 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      font-family: inherit;
+    }
+    .btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(24, 24, 27, 0.14);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #27272A;
+    }
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.22);
+    }
+    .btn-accent:hover:not(:disabled) {
+      background: #1D4ED8;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink-secondary);
+      border: 1px solid var(--line);
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .btn-ghost:hover {
+      background: rgba(24, 24, 27, 0.03);
+      color: var(--ink);
+    }
+    .btn-soft {
+      background: #F4F4F5;
+      color: var(--ink);
+      padding: 11px 20px;
+      font-size: 14.5px;
+    }
+    .btn-soft:hover {
+      background: #E4E4E7;
+    }
+
+    /* 第一关：极简口算专注区 */
+    .progress-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot {
+      width: 18px;
+      height: 6px;
+      border-radius: 999px;
+      background: #E4E4E7;
+      transition: all 0.25s ease;
+    }
+    .dot.filled {
+      background: var(--sage);
+    }
+    .dot.current {
+      width: 26px;
+      background: var(--ink);
+    }
+
+    .math-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 0 12px;
+      text-align: center;
+    }
+    .math-expr {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 28px;
+      line-height: 1.15;
+    }
+    .math-input-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      width: 100%;
+    }
+    .clean-num-input {
+      width: 190px;
+      height: 68px;
+      font-size: 34px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+      background: #F4F4F5;
+      border: 2px solid transparent;
+      border-radius: 20px;
+      color: var(--ink);
+      outline: none;
+      transition: all 0.18s ease;
+      font-family: inherit;
+    }
+    .clean-num-input::placeholder {
+      color: #C4C4CC;
+      font-size: 20px;
+      font-weight: 500;
+    }
+    .clean-num-input:focus {
+      background: #FFFFFF;
+      border-color: var(--ink);
+      box-shadow: 0 0 0 5px rgba(24, 24, 27, 0.06);
+    }
+    .subtle-rule {
+      margin-top: 22px;
+      font-size: 12.5px;
+      color: var(--ink-muted);
+    }
+
+    @keyframes gentleShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+    .shake {
+      animation: gentleShake 0.28s ease;
+    }
+
+    /* 第二关：原版书纸感朗读页 */
+    .reader-sheet {
+      background: var(--paper);
+      border: 1px solid rgba(24, 24, 27, 0.06);
+      border-radius: 22px;
+      padding: 28px 30px;
+      font-family: Georgia, "New York", "Times New Roman", serif;
+      font-size: 20px;
+      line-height: 1.85;
+      color: #1C1917;
+      white-space: pre-line;
+      margin-bottom: 24px;
+    }
+    .rec-dock {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 22px 20px;
+      border-radius: 20px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--line);
+      text-align: center;
+    }
+    .rec-btn {
+      min-width: 220px;
+      height: 54px;
+      font-size: 16px;
+    }
+    .rec-btn.recording {
+      background: var(--coral);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.28);
+    }
+    .wave-bars {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      height: 18px;
+    }
+    .wave-bars.active {
+      display: inline-flex;
+    }
+    .wave-bars span {
+      width: 3px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--coral);
+      animation: waveBounce 0.9s infinite ease-in-out;
+    }
+    .wave-bars span:nth-child(2) { animation-delay: 0.15s; }
+    .wave-bars span:nth-child(3) { animation-delay: 0.3s; }
+    .wave-bars span:nth-child(4) { animation-delay: 0.45s; }
+    @keyframes waveBounce {
+      0%, 100% { height: 6px; opacity: 0.5; }
+      50% { height: 18px; opacity: 1; }
+    }
+    .rec-meta {
+      font-size: 13px;
+      color: var(--ink-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+    .transcript-line {
+      width: 100%;
+      font-size: 13.5px;
+      color: var(--ink-muted);
+      padding-top: 8px;
+      border-top: 1px dashed var(--line);
+      min-height: 28px;
+      text-align: center;
+    }
+
+    .quiz-section {
+      margin-top: 28px;
+      padding-top: 26px;
+      border-top: 1px solid var(--line);
+    }
+    .quiz-card {
+      margin-bottom: 20px;
+    }
+    .quiz-q {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .opt-btn {
+      appearance: none;
+      text-align: left;
+      padding: 13px 16px;
+      border-radius: 14px;
+      border: 1.5px solid var(--line-strong);
+      background: var(--surface);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .opt-btn:hover {
+      border-color: var(--ink);
+      background: var(--surface-subtle);
+    }
+    .opt-btn.selected {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: #fff;
+    }
+
+    /* 第三关：极简三步防偷看背单词 */
+    .substep-pills {
+      display: inline-flex;
+      gap: 6px;
+      background: #F4F4F5;
+      padding: 4px;
+      border-radius: 999px;
+      margin-bottom: 22px;
+    }
+    .substep-pill {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 999px;
+      color: var(--ink-muted);
+    }
+    .substep-pill.on {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    .sentence-focus {
+      background: var(--paper);
+      border: 1px solid rgba(24, 24, 27, 0.06);
+      border-radius: 22px;
+      padding: 28px 26px;
+      font-family: Georgia, "New York", serif;
+      font-size: 22px;
+      line-height: 1.7;
+      color: var(--ink);
+      margin-bottom: 22px;
+      text-align: center;
+    }
+    .sentence-focus mark {
+      background: #FEF3C7;
+      color: #92400E;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .spell-arena {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 12px 0 6px;
+    }
+    .spell-cn {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .spell-pos {
+      font-size: 13.5px;
+      color: var(--ink-secondary);
+      margin-bottom: 18px;
+    }
+    .spell-cloze {
+      font-family: Georgia, "New York", serif;
+      font-size: 18px;
+      color: var(--ink-secondary);
+      background: var(--paper);
+      padding: 12px 20px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+      max-width: 100%;
+    }
+    .tile-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .letter-tile {
+      width: 44px;
+      height: 52px;
+      border-radius: 12px;
+      border: 2px solid #E4E4E7;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+      text-transform: lowercase;
+      transition: all 0.12s ease;
+    }
+    .letter-tile.filled {
+      border-color: var(--ink);
+      background: #FAFAFA;
+      transform: translateY(-1px);
+    }
+    .letter-tile.space-tile {
+      width: 18px;
+      border: none;
+      background: transparent;
+    }
+    .word-input-clean {
+      width: 280px;
+      max-width: 100%;
+      height: 50px;
+      border-radius: 14px;
+      border: 1.5px solid var(--line-strong);
+      background: #F4F4F5;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--ink);
+      outline: none;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .word-input-clean:focus {
+      background: #fff;
+      border-color: var(--ink);
+      box-shadow: 0 0 0 4px rgba(24, 24, 27, 0.05);
+    }
+
+    /* 轻量状态提示条 */
+    .feedback {
+      margin-top: 18px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.ok { background: var(--sage-soft); color: #065F46; }
+    .feedback.err { background: var(--coral-soft); color: #991B1B; }
+    .feedback.info { background: var(--amber-soft); color: #92400E; }
+
+    /* 通关印章卡 */
+    .seal-badge {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--sage-soft);
+      color: var(--sage);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 30px;
+      font-weight: 700;
+    }
+    .report-sheet {
+      background: var(--surface-subtle);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 8px 22px;
+      margin-top: 22px;
+    }
+    .report-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+      gap: 16px;
+      font-size: 14.5px;
+    }
+    .report-row:last-child { border-bottom: none; }
+    .report-key { color: var(--ink-secondary); }
+    .report-val { font-weight: 600; color: var(--ink); text-align: right; }
+
+    /* 极简弹窗 */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 24, 27, 0.4);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 28px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+    }
+    .modal h3 { margin: 0 0 6px; font-size: 18px; }
+    .form-row { margin-bottom: 16px; }
+    .form-row label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      margin-bottom: 6px;
+    }
+    .form-row select, .form-row input {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--line-strong);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+    }
+    .form-row select:focus, .form-row input:focus {
+      border-color: var(--ink);
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 600px) {
+      .app-shell { padding: 14px 14px 40px; }
+      .card { padding: 24px 20px 28px; border-radius: 22px; }
+      .stepper { grid-template-columns: 1fr; }
+      .options-grid { grid-template-columns: 1fr; }
+      .math-expr { font-size: 44px; }
+      .reader-sheet { font-size: 18px; padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">每日闯关</div>
+          <div class="brand-sub" id="dayBanner">Day 01 · Unit 1 Lesson 1</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="meta-pill" id="todayDatePill"></span>
+        <button class="icon-toggle" id="soundToggleBtn" type="button" title="音效开关" aria-label="音效开关">
+          <svg id="soundOnIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+          <svg id="soundOffIcon" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+        </button>
+        <button class="btn btn-ghost" id="openParentBtn" type="button">家长设置</button>
+      </div>
+    </header>
+
+    <nav class="stepper" aria-label="闯关进度">
+      <div class="step-item active" id="navStep1">
+        <div class="step-left">
+          <div class="step-num">1</div>
+          <div class="step-label">三年级口算</div>
+        </div>
+        <div class="step-sub" id="navSub1">0 / 10</div>
+      </div>
+      <div class="step-item" id="navStep2">
+        <div class="step-left">
+          <div class="step-num">2</div>
+          <div class="step-label">原版朗读</div>
+        </div>
+        <div class="step-sub" id="navSub2">待开启</div>
+      </div>
+      <div class="step-item" id="navStep3">
+        <div class="step-left">
+          <div class="step-num">3</div>
+          <div class="step-label">闭卷拼词</div>
+        </div>
+        <div class="step-sub" id="navSub3">待开启</div>
+      </div>
+    </nav>
+
+    <!-- 第一关：三年级极简口算 -->
+    <section class="card" id="stage1">
+      <h1 class="card-title-hidden">第一关：口算连对 10 题挑战</h1>
+      <div class="card-top">
+        <span class="eyebrow" id="mathTagLabel">第一关 · 连续答对 10 题过关</span>
+        <div class="progress-dots" id="mathDots"></div>
+      </div>
+
+      <div class="math-stage" id="mathArena">
+        <div class="math-expr" id="mathExpr">48 + 37</div>
+        <div class="math-input-row">
+          <input
+            id="mathInput"
+            class="clean-num-input"
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            placeholder="得数"
+            autocomplete="off"
+          />
+          <button class="btn btn-primary" id="mathSubmitBtn" type="button">提交答案</button>
+        </div>
+        <div class="subtle-rule">按键盘回车键可直接提交 · 答错 1 题连击归零</div>
+      </div>
+      <div class="feedback" id="mathFeedback"></div>
+    </section>
+
+    <!-- 第二关：厚海原版英语朗读 -->
+    <section class="card hidden" id="stage2">
+      <div class="card-top">
+        <span class="eyebrow" id="readingTitle">第二关 · 课文整段朗读</span>
+        <span class="meta-pill" id="readingWordCount">94 词</span>
+      </div>
+
+      <div class="reader-sheet" id="readingPassage"></div>
+
+      <div class="rec-dock" id="recPanel">
+        <div class="rec-meta" id="recHint">点一下开始大声朗读，整段读完再点一下结束</div>
+        <button class="btn btn-primary rec-btn" id="recToggleBtn" type="button">🎤 点击开始朗读</button>
+        <div class="wave-bars" id="waveBars">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <div class="rec-meta" id="recTimer">准备就绪</div>
+        <div class="transcript-line" id="recTranscript">朗读时的语音识别会同步显示在这里</div>
+      </div>
+      <div class="feedback" id="readingFeedback"></div>
+
+      <div class="quiz-section hidden" id="readingQuizBlock">
+        <div class="eyebrow" style="margin-bottom:16px;">阅读理解 · 选出正确的 2 项</div>
+        <div id="quizContainer"></div>
+        <div style="text-align:center; margin-top:20px;">
+          <button class="btn btn-primary" id="quizSubmitBtn" type="button">检查理解题答案</button>
+        </div>
+        <div class="feedback" id="quizFeedback"></div>
+      </div>
+    </section>
+
+    <!-- 第三关：三步防偷看闭卷拼词 -->
+    <section class="card hidden" id="stage3">
+      <div class="card-top">
+        <span class="eyebrow">第三关 · 语境闭卷拼写</span>
+        <span class="meta-pill" id="vocabProgressPill">词 1 / 2</span>
+      </div>
+      <div id="vocabBody"></div>
+      <div class="feedback" id="vocabFeedback"></div>
+    </section>
+
+    <!-- 第四屏：通关印章与家长核验单 -->
+    <section class="card hidden" id="stage4">
+      <div style="text-align:center;">
+        <div class="seal-badge">✓</div>
+        <h2 style="margin:0; font-size:24px; font-weight:700;">今日闯关已完成</h2>
+        <p style="margin:6px 0 0; font-size:14px; color:var(--ink-secondary);">
+          请拿给爸爸或妈妈核验，输入屏幕时间密码选择「批准全天」
+        </p>
+      </div>
+      <div class="report-sheet" id="finalReportBox"></div>
+      <div style="margin-top:24px; text-align:center;">
+        <button class="btn btn-soft" id="restartTodayBtn" type="button">再练一遍今日关卡</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- 家长设置弹窗 -->
+  <div class="modal-backdrop" id="parentModal">
+    <div class="modal">
+      <h3>家长设置</h3>
+      <p style="margin:0 0 16px; font-size:13px; color:var(--ink-secondary);">默认密码 <strong>0000</strong>，用于调整厚海课本进度</p>
+
+      <div id="parentLockView">
+        <div class="form-row">
+          <label for="parentPinInput">4 位家长密码</label>
+          <input id="parentPinInput" type="password" inputmode="numeric" maxlength="4" placeholder="请输入密码" />
+        </div>
+        <div class="feedback" id="pinFeedback" style="margin-bottom:12px;"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn btn-ghost" id="closeParentBtn1" type="button">取消</button>
+          <button class="btn btn-primary" id="unlockParentBtn" type="button">解锁设置</button>
+        </div>
+      </div>
+
+      <div id="parentSettingsView" class="hidden">
+        <div class="form-row">
+          <label for="daySelect">当前厚海英语 WW3 关卡</label>
+          <select id="daySelect"></select>
+        </div>
+        <div class="form-row">
+          <label for="weakWordsInput">易错加练词（逗号分隔英文，次日优先加考）</label>
+          <input id="weakWordsInput" type="text" placeholder="例如 typewriter, sculpture" autocomplete="off" />
+        </div>
+        <div class="form-row">
+          <label for="newPinInput">修改 4 位家长密码（不改请留空）</label>
+          <input id="newPinInput" type="password" inputmode="numeric" maxlength="4" placeholder="例如 2580" />
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn btn-ghost" id="closeParentBtn2" type="button">关闭</button>
+          <button class="btn btn-primary" id="saveParentBtn" type="button">保存并应用</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 覆盖《厚海英语 Wonderful World 3》全书 Units 1–12 精选原文、理解题与核心词
+    const CURRICULUM = [
+  {
+    "day": 1,
+    "unit": "Unit 1 Lesson 1 (P8)",
+    "passage": "Carla and Lorena are nine years old. They're twins. They're Brazilian. They're from São Paulo.\nThey're the same in lots of ways. But they're different in lots of ways, too.\nCarla is loud. She's got lots of friends. She's always talking. She is silly, too!\nCarla and Lorena are both clever. And they're crazy about technology. They're always building and making new things.\nLorena is quiet. She's got two good friends, but she's often with her sister, Carla.\nThese twins are best friends!",
+    "quiz": [
+      {
+        "q": "1. Where are Carla and Lorena from?",
+        "opts": [
+          "Spain",
+          "Brazil",
+          "Japan",
+          "India"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What are both twins crazy about?",
+        "opts": [
+          "Cooking",
+          "Swimming",
+          "Technology",
+          "Comics"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "clever",
+        "pos": "adj.",
+        "cn": "聪明的",
+        "ctx": "Carla and Lorena are both clever.",
+        "blank": "Carla and Lorena are both ______.",
+        "distractors": [
+          "安静的",
+          "危险的",
+          "昂贵的"
+        ]
+      },
+      {
+        "word": "different",
+        "pos": "adj.",
+        "cn": "不同的",
+        "ctx": "But they're different in lots of ways, too.",
+        "blank": "But they're ______ in lots of ways, too.",
+        "distractors": [
+          "相同的",
+          "无聊的",
+          "古老的"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 2,
+    "unit": "Unit 1 Lesson 2 (P10)",
+    "passage": "Emperor penguins are amazing birds. They live in the Antarctic. They can't fly, but they can swim really well! They're also great parents. The mother penguin has one egg every winter. She gives her egg to the father penguin and then she goes to the sea for food. Sometimes she walks about 80 kilometres! It's very cold in the Antarctic and the father penguin keeps the egg warm on his feet. He stays with the egg and he doesn't eat. Then after two months the chick (baby penguin) comes out of the egg. Soon the mother is back with their food. The father penguin leaves. He goes back to the sea because he's very hungry. He wants his own food!",
+    "quiz": [
+      {
+        "q": "1. Who keeps the egg warm on his feet?",
+        "opts": [
+          "The mother penguin",
+          "The father penguin",
+          "The baby chick",
+          "Another bird"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. When does the chick come out of the egg?",
+        "opts": [
+          "After two weeks",
+          "After one month",
+          "After two months",
+          "After one year"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "parents",
+        "pos": "n.",
+        "cn": "父母",
+        "ctx": "They're also great parents.",
+        "blank": "They're also great ______.",
+        "distractors": [
+          "老师",
+          "医生",
+          "邻居"
+        ]
+      },
+      {
+        "word": "technology",
+        "pos": "n.",
+        "cn": "技术",
+        "ctx": "This computer uses new technology.",
+        "blank": "This computer uses new ______.",
+        "distractors": [
+          "历史",
+          "音乐",
+          "运动"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 3,
+    "unit": "Unit 1 Lesson 3 (P12)",
+    "passage": "Hi! I'm Errol and I'm 11 years old. I'm from India. My best friends are Eshan and Yann. They're brothers and they're 9 and 11 years old. They're cool! The brothers' hair is brown. Yann is together with me in Class 3A at school. Eshan is very clever, and Yann is very funny. Their birthdays are on the same day – 8th February! Who is your best friend? Write me an email soon! Errol\nHello! I'm Lara and I'm French. I'm 9 years old. Sophie is my best friend. She's 34 years old. Her hair is fair and her eyes are green. She's beautiful and she's my mum! Sometimes I do stupid things, but she says 'It's OK, it doesn't matter.' Is your mum your best friend?",
+    "quiz": [
+      {
+        "q": "1. Which class are Errol and Yann in together?",
+        "opts": [
+          "Class 2B",
+          "Class 3A",
+          "Class 4C",
+          "Class 1A"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Who is Lara's best friend?",
+        "opts": [
+          "Her sister",
+          "Her teacher",
+          "Her mum",
+          "Her cousin"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "together",
+        "pos": "adv.",
+        "cn": "一起",
+        "ctx": "Yann is together with me in Class 3A at school.",
+        "blank": "Yann is ______ with me in Class 3A at school.",
+        "distractors": [
+          "独自",
+          "突然",
+          "几乎"
+        ]
+      },
+      {
+        "word": "matter",
+        "pos": "v.",
+        "cn": "要紧",
+        "ctx": "It's OK, it doesn't matter.",
+        "blank": "It's OK, it doesn't ______.",
+        "distractors": [
+          "到达",
+          "忘记",
+          "庆祝"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 4,
+    "unit": "Unit 2 Lesson 1 上半段 (P16)",
+    "passage": "Dad: Sonja, I've got a box of my old things. Look, a puzzle! It's got 500 pieces. Do you want to do it with me?\nSonja: Not now, Dad. I'm playing a video game.\nDad: Oh, OK. Sorry.\nSonja: No, it's OK, Dad. What other things have you got in that box?\nDad: Well, I've got some old books, some photos, and ... look. My typewriter!\nSonja: What is that? It's so strange! Can I touch it?\nDad: Of course. You can write with it. You put the paper in, then you touch the letters. Go on, try it!",
+    "quiz": [
+      {
+        "q": "1. How many pieces has Dad's puzzle got?",
+        "opts": [
+          "100",
+          "300",
+          "500",
+          "1000"
+        ],
+        "ans": 2
+      },
+      {
+        "q": "2. What is Sonja doing when Dad asks her?",
+        "opts": [
+          "Reading a book",
+          "Playing a video game",
+          "Doing homework",
+          "Drawing"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "puzzle",
+        "pos": "n.",
+        "cn": "智力拼图游戏",
+        "ctx": "Look, a puzzle! It's got 500 pieces.",
+        "blank": "Look, a ______! It's got 500 pieces.",
+        "distractors": [
+          "地球仪",
+          "照相机",
+          "笔记本"
+        ]
+      },
+      {
+        "word": "piece",
+        "pos": "n.",
+        "cn": "一块；一片",
+        "ctx": "I want to have a piece of cake.",
+        "blank": "I want to have a ______ of cake.",
+        "distractors": [
+          "一双",
+          "一座",
+          "一群"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 5,
+    "unit": "Unit 2 Lesson 1 下半段 (P16)",
+    "passage": "Dad: Well, I've got some old books, some photos, and ... look. My typewriter!\nSonja: What is that? It's so strange! Can I touch it?\nDad: Of course. You can write with it. You put the paper in, then you touch the letters. Go on, try it!\nSonja: I'm scared. I don't want to break it.\nDad: Scared? It's fun! Look, I can write your name. Now you do it.\nSonja: Wow! It is fun. It's different from my computer, but I like it!\nDad: You can have it.\nSonja: Really? Thanks, Dad!",
+    "quiz": [
+      {
+        "q": "1. Why doesn't Sonja want to try the typewriter at first?",
+        "opts": [
+          "It is dirty",
+          "She doesn't want to break it",
+          "She has no paper",
+          "She is sleepy"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What does Sonja think of the typewriter after trying it?",
+        "opts": [
+          "It is boring",
+          "It is fun and she likes it",
+          "It is too heavy",
+          "It is broken"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "strange",
+        "pos": "adj.",
+        "cn": "奇怪的",
+        "ctx": "What is that? It's so strange!",
+        "blank": "What is that? It's so ______!",
+        "distractors": [
+          "美味的",
+          "受欢迎的",
+          "普通的"
+        ]
+      },
+      {
+        "word": "typewriter",
+        "pos": "n.",
+        "cn": "打字机",
+        "ctx": "Before computers, people wrote letters on typewriters.",
+        "blank": "Before computers, people wrote letters on ______s.",
+        "distractors": [
+          "滑板",
+          "电视机",
+          "望远镜"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 6,
+    "unit": "Unit 2 Lesson 2 第1-2段 (P18)",
+    "passage": "Remote-Controlled Tarantula: Is this a real spider? No, it isn't! It's just a toy. It's got eight moving legs. Do you like to scare your friends? Then this is the toy for you! Real tarantulas have got eight eyes, but they can't see well.\nInteractive Talking Globe: This is a talking map of the world! There's a special pen with the globe. Touch a country with the pen and the globe tells you about it! It's also a great help with homework.",
+    "quiz": [
+      {
+        "q": "1. How many eyes have real tarantulas got?",
+        "opts": [
+          "Two",
+          "Four",
+          "Six",
+          "Eight"
+        ],
+        "ans": 3
+      },
+      {
+        "q": "2. What happens when you touch a country on the globe with the pen?",
+        "opts": [
+          "It plays music",
+          "It tells you about the country",
+          "It lights up",
+          "It moves"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "country",
+        "pos": "n.",
+        "cn": "国家",
+        "ctx": "Touch a country with the pen and the globe tells you about it!",
+        "blank": "Touch a ______ with the pen and the globe tells you about it!",
+        "distractors": [
+          "村庄",
+          "花园",
+          "剧院"
+        ]
+      },
+      {
+        "word": "globe",
+        "pos": "n.",
+        "cn": "地球仪",
+        "ctx": "I can find China on the globe.",
+        "blank": "I can find China on the ______.",
+        "distractors": [
+          "菜单",
+          "头盔",
+          "篮子"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 7,
+    "unit": "Unit 2 Lesson 2 第3-4段 (P18)",
+    "passage": "Coding Board Game: Code Monkey Island is an exciting board game. There are monkey game pieces. You must move them around the island. This board game teaches you to code, or tell a computer what to do.\nCaster Board: A caster board is like a skateboard, but moves like a surfboard or a snow board. To make it go, you must move your body. You don't put your feet on the pavement. They stay on the board. It's not scary – it's fun!",
+    "quiz": [
+      {
+        "q": "1. What does Code Monkey Island teach you to do?",
+        "opts": [
+          "Cook food",
+          "Code a computer",
+          "Swim fast",
+          "Draw monkeys"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Where do your feet stay when riding a caster board?",
+        "opts": [
+          "On the pavement",
+          "On the board",
+          "In the water",
+          "On a chair"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "exciting",
+        "pos": "adj.",
+        "cn": "令人激动的",
+        "ctx": "Code Monkey Island is an exciting board game.",
+        "blank": "Code Monkey Island is an ______ board game.",
+        "distractors": [
+          "安静的",
+          "普通的",
+          "惊讶的"
+        ]
+      },
+      {
+        "word": "present",
+        "pos": "n.",
+        "cn": "礼物",
+        "ctx": "I need to buy a present for my friend.",
+        "blank": "I need to buy a ______ for my friend.",
+        "distractors": [
+          "制服",
+          "雨衣",
+          "杂志"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 8,
+    "unit": "Unit 2 Lesson 3 上半篇 (P20)",
+    "passage": "Dan, 11: My friends are crazy about video games, but I like comics. My friends say comics are boring. I like the drawings and the stories. I love Japanese comics. They're called manga. They're my favourite!\nAmy, 14: My favourite thing is my violin. It's my mum's violin really and it's very old! Mum doesn't play it now. I have lessons and I'm quite good. The lessons are difficult, but they're fun.",
+    "quiz": [
+      {
+        "q": "1. What are Japanese comics called?",
+        "opts": [
+          "Puzzles",
+          "Manga",
+          "Puppets",
+          "Globes"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Whose violin was Amy's violin originally?",
+        "opts": [
+          "Her dad's",
+          "Her teacher's",
+          "Her mum's",
+          "Her friend's"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "scared",
+        "pos": "adj.",
+        "cn": "惊恐的；害怕的",
+        "ctx": "Maddie is scared of spiders.",
+        "blank": "Maddie is ______ of spiders.",
+        "distractors": [
+          "聪明的",
+          "美味的",
+          "受欢迎的"
+        ]
+      },
+      {
+        "word": "magazine",
+        "pos": "n.",
+        "cn": "杂志",
+        "ctx": "I like the animal pictures in this magazine.",
+        "blank": "I like the animal pictures in this ______.",
+        "distractors": [
+          "雕塑",
+          "运河",
+          "地下室"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 9,
+    "unit": "Unit 2 Lesson 3 下半篇 (P20)",
+    "passage": "Tom, 12: My family and I have got a boat. Its name is 'Sea Queen' and it's blue and white. It isn't very big but it's great! It's my favourite thing. Here's a photo of me, my mum, my dad and my sister with our boat.\nMiranda, 7: My puppets are my favourite things. I have fun with them. My little brother Tony is crazy about puppets, too. We play with the puppets together. Our puppets sing and dance for our mum and dad.",
+    "quiz": [
+      {
+        "q": "1. What is the name of Tom's family boat?",
+        "opts": [
+          "Blue Bird",
+          "Sea Queen",
+          "Ocean Star",
+          "Snow King"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What do Miranda and Tony's puppets do for their parents?",
+        "opts": [
+          "Cook dinner",
+          "Sing and dance",
+          "Read books",
+          "Play football"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "puppet",
+        "pos": "n.",
+        "cn": "木偶",
+        "ctx": "My puppets are my favourite things.",
+        "blank": "We went to watch a ______ show.",
+        "distractors": [
+          "头盔",
+          "筷子",
+          "雨衣"
+        ]
+      },
+      {
+        "word": "interactive",
+        "pos": "adj.",
+        "cn": "互动的",
+        "ctx": "This game is interactive.",
+        "blank": "This game is ______.",
+        "distractors": [
+          "隐藏的",
+          "古老的",
+          "危险的"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 10,
+    "unit": "Unit 3 Lesson 1 (P28)",
+    "passage": "Maggie MacDonnell is a teacher. In March 2017, she was in Dubai at the Global Teacher Prize Ceremony. Guess what? She won!\nDubai is very far away from Salluit in the Canadian Arctic where Maggie teaches. You cannot get to Salluit by car. You have to fly. It is very cold and windy there.\nMany people leave Salluit, but not Maggie. Maggie's students study maths, science and English. She teaches school subjects, but she does a lot more. She finds solutions to her students' problems. It's often too cold for them to play outside. So, Maggie opened a fitness centre. Now, her students can exercise and practise sport all year.",
+    "quiz": [
+      {
+        "q": "1. How do people get to Salluit?",
+        "opts": [
+          "By car",
+          "By train",
+          "By plane",
+          "By bike"
+        ],
+        "ans": 2
+      },
+      {
+        "q": "2. Why did Maggie open a fitness centre?",
+        "opts": [
+          "It is often too hot",
+          "It is often too cold to play outside",
+          "There is no school",
+          "Students don't like maths"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "exercise",
+        "pos": "v.",
+        "cn": "锻炼",
+        "ctx": "Now, her students can exercise and practise sport all year.",
+        "blank": "How often do you ______?",
+        "distractors": [
+          "漂浮",
+          "庆祝",
+          "放松"
+        ]
+      },
+      {
+        "word": "solution",
+        "pos": "n.",
+        "cn": "解决办法",
+        "ctx": "She finds solutions to her students' problems.",
+        "blank": "I want to find a better ______.",
+        "distractors": [
+          "入口",
+          "传统",
+          "菜单"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 11,
+    "unit": "Unit 3 Lesson 2 第1-2段 (P30)",
+    "passage": "Japanese students usually walk to school and they wear caps, hats, or helmets. In some schools they also wear a uniform. In many schools, students start lessons at 8.30 am and they finish at 3.50 pm. They do subjects like Japanese, maths, history and English. They do lots of homework, too.\nStudents have lunch at school. They usually eat in their classroom. Some students carry the food to the classroom from the kitchen. Students don't only eat Japanese food. They also eat things like spaghetti or meatballs. After lunch, students always brush their teeth. Then they clean their classroom!",
+    "quiz": [
+      {
+        "q": "1. Where do Japanese students usually eat lunch?",
+        "opts": [
+          "At home",
+          "In a park",
+          "In their classroom",
+          "On the bus"
+        ],
+        "ans": 2
+      },
+      {
+        "q": "2. What do students always do after lunch?",
+        "opts": [
+          "Go to sleep",
+          "Brush their teeth and clean the classroom",
+          "Watch TV",
+          "Go home"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "practise",
+        "pos": "v.",
+        "cn": "练习",
+        "ctx": "You need to practise every day.",
+        "blank": "You need to ______ every day.",
+        "distractors": [
+          "忘记",
+          "隐藏",
+          "漂浮"
+        ]
+      },
+      {
+        "word": "uniform",
+        "pos": "n.",
+        "cn": "制服；校服",
+        "ctx": "In some schools they also wear a uniform.",
+        "blank": "I need to wear my school ______.",
+        "distractors": [
+          "雨衣",
+          "演出服",
+          "篮子"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 12,
+    "unit": "Unit 3 Lesson 2 第2-3段 (P30)",
+    "passage": "Students have lunch at school. They usually eat in their classroom. Some students carry the food to the classroom from the kitchen. Students don't only eat Japanese food. They also eat things like spaghetti or meatballs. After lunch, students always brush their teeth. Then they clean their classroom!\nWhat do Japanese students do after school? Well, there are many after-school activities. Some students play sports or a musical instrument. Others learn a new language or go to art or science clubs. One student from Tokyo likes the karaoke club at her school. 'We sing songs and have fun there,' she says.",
+    "quiz": [
+      {
+        "q": "1. Besides Japanese food, what else do students eat?",
+        "opts": [
+          "Spaghetti or meatballs",
+          "Only bread",
+          "Ice cream only",
+          "Popcorn"
+        ],
+        "ans": 0
+      },
+      {
+        "q": "2. Which club does the student from Tokyo like?",
+        "opts": [
+          "Chess club",
+          "Karaoke club",
+          "Swimming club",
+          "Cooking club"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "library",
+        "pos": "n.",
+        "cn": "图书馆",
+        "ctx": "I got this very interesting book out of the library.",
+        "blank": "I got this very interesting book out of the ______.",
+        "distractors": [
+          "地下室",
+          "剧院",
+          "村庄"
+        ]
+      },
+      {
+        "word": "cafeteria",
+        "pos": "n.",
+        "cn": "自助食堂",
+        "ctx": "Our school cafeteria usually has pizza for lunch on Fridays.",
+        "blank": "Our school ______ usually has pizza for lunch on Fridays.",
+        "distractors": [
+          "运河",
+          "阳台",
+          "花园"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 13,
+    "unit": "Unit 3 Lesson 3 (P32)",
+    "passage": "I want to tell you about a secondary boarding school in Argentina. It is very different from my school. Students study maths, science and Spanish, but they also do some very cool stuff! They learn how to grow vegetables and how to take care of animals, like sheep!\nIn the afternoon, they always have after-school activities. They learn how to make jewellery and do arts and crafts. In the evening, they have dinner and they often study and do homework. But they go to sleep at 11.00. I usually go to sleep at 9.30, but sometimes I talk with my sister until 10.30.",
+    "quiz": [
+      {
+        "q": "1. What cool things do students learn at the boarding school in Argentina?",
+        "opts": [
+          "Fly a plane",
+          "Grow vegetables and take care of animals",
+          "Build cars",
+          "Make films"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What time do students at that boarding school go to sleep?",
+        "opts": [
+          "At 8.30",
+          "At 9.30",
+          "At 10.30",
+          "At 11.00"
+        ],
+        "ans": 3
+      }
+    ],
+    "words": [
+      {
+        "word": "schedule",
+        "pos": "n.",
+        "cn": "时间表；课程表",
+        "ctx": "My school schedule shows art class at 10 am.",
+        "blank": "My school ______ shows art class at 10 am.",
+        "distractors": [
+          "菜单",
+          "雕塑",
+          "奖项"
+        ]
+      },
+      {
+        "word": "ceremony",
+        "pos": "n.",
+        "cn": "仪式；典礼",
+        "ctx": "We wear special clothes for the school ceremony.",
+        "blank": "We wear special clothes for the school ______.",
+        "distractors": [
+          "比赛",
+          "友谊",
+          "能源"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 14,
+    "unit": "Unit 4 Lesson 1 (P36)",
+    "passage": "Wyatt: Hi Eve. What's that in your hand?\nEve: It's my kite. It's a colourful bird.\nWyatt: Where are you going with the kite?\nEve: To the Kite Festival. Do you want to come with me?\nWyatt: All right!\nEve: I can't wait to get my kite into the sky.\nWyatt: There are so many people here! Is this a competition?\nEve: Yes, it is. There's a prize for the prettiest kite.\nWyatt: What does the winner get?\nEve: Usually, the winner gets some money.\nWyatt: You've got a pretty kite, Eve. You might win!\nAnnouncer: And the winner is ... Eve Duclot!\nWyatt: That's you, Eve. Congratulations!\nEve: Wow! I'm really surprised. And I'm happy, too.",
+    "quiz": [
+      {
+        "q": "1. What does Eve's kite look like?",
+        "opts": [
+          "A dragon",
+          "A colourful bird",
+          "A blue fish",
+          "A bear"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What is the prize for in the competition?",
+        "opts": [
+          "The biggest kite",
+          "The fastest kite",
+          "The prettiest kite",
+          "The highest kite"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "competition",
+        "pos": "n.",
+        "cn": "比赛",
+        "ctx": "There are so many people here! Is this a competition?",
+        "blank": "Hundreds of schools entered the ______.",
+        "distractors": [
+          "餐厅",
+          "雨衣",
+          "花园"
+        ]
+      },
+      {
+        "word": "surprised",
+        "pos": "adj.",
+        "cn": "惊讶的",
+        "ctx": "Wow! I'm really surprised.",
+        "blank": "She looked ______ when I told her the news.",
+        "distractors": [
+          "普通的",
+          "隐藏的",
+          "安静的"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 15,
+    "unit": "Unit 4 Lesson 2 第1-2段 (P38)",
+    "passage": "Luna Park is a very old and a very popular amusement park in Sydney, Australia. Thousands of visitors and tourists come here every year. At the entrance, there is a huge smiling face. It's a very famous face in Australia. You go in through its mouth and you can see its teeth above you!\nPeople of all ages can have fun here. There are many rides like the Wild Mouse roller coaster. It's very scary! There is also a Ferris wheel. On this ride, you can get a great view of the amusement park and Sydney harbour.",
+    "quiz": [
+      {
+        "q": "1. How do visitors enter Luna Park in Sydney?",
+        "opts": [
+          "Through a tunnel",
+          "Through the mouth of a huge smiling face",
+          "By boat",
+          "Over a bridge"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What can you see from the Ferris wheel?",
+        "opts": [
+          "A desert",
+          "Luna Park and Sydney harbour",
+          "Snow mountains",
+          "A forest"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "entrance",
+        "pos": "n.",
+        "cn": "入口",
+        "ctx": "At the entrance, there is a huge smiling face.",
+        "blank": "The main ______ is on the left side.",
+        "distractors": [
+          "地下室",
+          "阳台",
+          "终点线"
+        ]
+      },
+      {
+        "word": "tourist",
+        "pos": "n.",
+        "cn": "游客",
+        "ctx": "Thousands of visitors and tourists come here every year.",
+        "blank": "The museums attract a lot of ______s.",
+        "distractors": [
+          "导演",
+          "发明家",
+          "女服务员"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 16,
+    "unit": "Unit 4 Lesson 2 第2-3段 (P38)",
+    "passage": "There are many rides like the Wild Mouse roller coaster. It's very scary! There is also a Ferris wheel. On this ride, you can get a great view of the amusement park and Sydney harbour. There are also slides, merry-go-rounds and many other attractions like the Crazy Mirrors. Your face and body look very funny in these mirrors. There are also lots of games with fantastic prizes.\nThere are very nice restaurants and cafés at Luna Park. They've got pizzas, burgers and sandwiches. They also sell ice cream, coffee and drinks.",
+    "quiz": [
+      {
+        "q": "1. What happens when you look into the Crazy Mirrors?",
+        "opts": [
+          "You disappear",
+          "Your face and body look very funny",
+          "You see animals",
+          "It gets dark"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What food can you buy at Luna Park?",
+        "opts": [
+          "Sushi and noodles",
+          "Pizzas, burgers and sandwiches",
+          "Pierogi",
+          "Soup only"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "attraction",
+        "pos": "n.",
+        "cn": "景点；游乐设施",
+        "ctx": "There are also slides, merry-go-rounds and many other attractions.",
+        "blank": "The zoo is a fun ______ for kids.",
+        "distractors": [
+          "传统",
+          "解决办法",
+          "准备工作"
+        ]
+      },
+      {
+        "word": "popular",
+        "pos": "adj.",
+        "cn": "受欢迎的",
+        "ctx": "Ice cream is a popular dessert.",
+        "blank": "Ice cream is a ______ dessert.",
+        "distractors": [
+          "惊恐的",
+          "奇怪的",
+          "隐藏的"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 17,
+    "unit": "Unit 4 Lesson 3 上半篇 (P40)",
+    "passage": "Gustavo: Hi, I'm Gustavo. Where are you from?\nChet: Hi! I'm from Thailand, but I'm in Brazil for a week. My name's Chet.\nGustavo: Nice to meet you, Chet.\nChet: Nice to meet you, too. What do you usually do here on Saturdays?\nGustavo: I often go swimming and then I eat a big meal with my family. And you?\nChet: Well, my dad's got a bookshop. On Saturday mornings I help in the shop.\nGustavo: Wow! That's fantastic! What do you do on Saturday evenings?\nChet: I sometimes go to the sports centre with my friends and we go bowling. We also have bowling contests. I'm usually the winner. I'm very good at bowling. Do you like bowling?",
+    "quiz": [
+      {
+        "q": "1. Where does Chet help on Saturday mornings?",
+        "opts": [
+          "In a café",
+          "In his dad's bookshop",
+          "At a cinema",
+          "On a farm"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What sport is Chet very good at?",
+        "opts": [
+          "Swimming",
+          "Bowling",
+          "Skating",
+          "Cycling"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "archery",
+        "pos": "n.",
+        "cn": "射箭",
+        "ctx": "In archery, always listen to the coach for safety.",
+        "blank": "In ______, always listen to the coach for safety.",
+        "distractors": [
+          "保龄球",
+          "狂欢节",
+          "友谊"
+        ]
+      },
+      {
+        "word": "bowling",
+        "pos": "n.",
+        "cn": "保龄球运动",
+        "ctx": "I sometimes go to the sports centre with my friends and we go bowling.",
+        "blank": "Let's go ______ with Dad!",
+        "distractors": [
+          "漂浮",
+          "锻炼",
+          "训练"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 18,
+    "unit": "Unit 4 Lesson 3 下半篇 (P40)",
+    "passage": "Gustavo: No, I don't. I often go to the cinema with my parents on Saturday. In my city, Rio de Janeiro, you can see films at cinemas outside!\nChet: Really? We haven't got that in my town. Do you like amusement parks?\nGustavo: Yes, I do. There's a great park near my house. It's called Parque Shanghai.\nChet: There's a fun amusement park near my house, too. It's called Dream World. It's got fantastic rides. There are some really fast roller coasters. I love to go there at the weekend. There are lots of great water parks in Thailand, too!\nGustavo: Wow! Thailand sounds pretty cool!\nChet: Yes, it is. Maybe you can come and visit one day!",
+    "quiz": [
+      {
+        "q": "1. What is special about some cinemas in Rio de Janeiro?",
+        "opts": [
+          "They are under water",
+          "You can see films outside",
+          "They are on boats",
+          "They are free"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What is the amusement park near Chet's house called?",
+        "opts": [
+          "Luna Park",
+          "Parque Shanghai",
+          "Dream World",
+          "Sea Queen"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "restaurant",
+        "pos": "n.",
+        "cn": "餐厅",
+        "ctx": "Let's have dinner at the new Italian restaurant.",
+        "blank": "Let's have dinner at the new Italian ______.",
+        "distractors": [
+          "图书馆",
+          "地下室",
+          "体育馆"
+        ]
+      },
+      {
+        "word": "theatre",
+        "pos": "n.",
+        "cn": "剧院",
+        "ctx": "We saw an amazing play at the theatre last weekend.",
+        "blank": "We saw an amazing play at the ______ last weekend.",
+        "distractors": [
+          "运河",
+          "村庄",
+          "花园"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 19,
+    "unit": "Unit 5 Lesson 1 (P48)",
+    "passage": "The Holi Festival takes place every year in South Asia. It's especially popular in India. The celebration is at the end of winter. It's on the last full moon of the month, in late February or early March.\nBefore the festival, people go to market stalls to buy colourful powder and paint. The first evening, there are bonfires to start the celebration. The next day, people go into the streets with the powder and paint. They throw the colours onto other people and into the air. People are covered in pink, yellow, red, orange and other bright colours! They sing, dance and play. Everybody is happy! The Holi Festival is an exciting, colourful way to start spring.",
+    "quiz": [
+      {
+        "q": "1. When does the Holi Festival take place?",
+        "opts": [
+          "In summer",
+          "At the end of winter",
+          "In autumn",
+          "On 31st December"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What starts the celebration on the first evening?",
+        "opts": [
+          "Fireworks",
+          "Bonfires",
+          "A boat race",
+          "An ice palace"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "celebration",
+        "pos": "n.",
+        "cn": "庆祝；庆典",
+        "ctx": "The celebration is at the end of winter.",
+        "blank": "We had a big ______ for my grandma's birthday.",
+        "distractors": [
+          "比赛",
+          "解决办法",
+          "时间表"
+        ]
+      },
+      {
+        "word": "festival",
+        "pos": "n.",
+        "cn": "节日",
+        "ctx": "The Holi Festival takes place every year in South Asia.",
+        "blank": "We danced all night at the music ______.",
+        "distractors": [
+          "博物馆",
+          "图书馆",
+          "自助食堂"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 20,
+    "unit": "Unit 5 Lesson 2 第1-2段 (P50)",
+    "passage": "The Quebec Winter Carnival in Canada is very famous. Thousands of visitors come to Quebec for the carnival. The activities go on for three weeks. It's a lot of fun. There are parades for children and adults during the day and at night. There are huge models of strange animals and people. People wear costumes, dance and play music in the streets. People sing a special carnival song. There are fireworks, too.\nPreparations for the carnival take a whole year. There are lots of other events. There is a competition for beautiful sculptures made from snow and ice. There are sports events including an ice canoe race, skating, hockey and snowboarding. Some people even take a 'snow bath'! It's always very cold. People drink hot drinks to keep themselves warm.",
+    "quiz": [
+      {
+        "q": "1. How long do the Quebec Winter Carnival activities last?",
+        "opts": [
+          "Three days",
+          "One week",
+          "Three weeks",
+          "Two months"
+        ],
+        "ans": 2
+      },
+      {
+        "q": "2. What do people drink to keep themselves warm?",
+        "opts": [
+          "Cold juice",
+          "Hot drinks",
+          "Milkshakes",
+          "Ice water"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "carnival",
+        "pos": "n.",
+        "cn": "狂欢节",
+        "ctx": "The Quebec Winter Carnival in Canada is very famous.",
+        "blank": "The ______ has fun games and delicious food.",
+        "distractors": [
+          "剧院",
+          "入口",
+          "运河"
+        ]
+      },
+      {
+        "word": "costume",
+        "pos": "n.",
+        "cn": "装束；演出服",
+        "ctx": "People wear costumes, dance and play music in the streets.",
+        "blank": "She wears a butterfly ______ for the party.",
+        "distractors": [
+          "制服",
+          "雨衣",
+          "头盔"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 21,
+    "unit": "Unit 5 Lesson 2 第2-3段 (P50)",
+    "passage": "Preparations for the carnival take a whole year. There are lots of other events. There is a competition for beautiful sculptures made from snow and ice. There are sports events including an ice canoe race, skating, hockey and snowboarding. Some people even take a 'snow bath'! It's always very cold. People drink hot drinks to keep themselves warm.\nThe carnival mascot is the Bonhomme, a large snowman who leads the parades. The Bonhomme wears a red hat and a colourful belt. He lives in the huge ice palace. You can go inside and explore the rooms of the palace. If you are lucky, you will meet the Bonhomme!",
+    "quiz": [
+      {
+        "q": "1. Who is the Bonhomme?",
+        "opts": [
+          "A famous chef",
+          "A large snowman mascot",
+          "An ice dancer",
+          "A film director"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Where does the Bonhomme live?",
+        "opts": [
+          "In a wooden cottage",
+          "In a huge ice palace",
+          "In a castle in Spain",
+          "In a cave"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "preparations",
+        "pos": "n.",
+        "cn": "准备工作",
+        "ctx": "Preparations for the carnival take a whole year.",
+        "blank": "______ for the festival take many weeks.",
+        "distractors": [
+          "邀请",
+          "景点",
+          "友谊"
+        ]
+      },
+      {
+        "word": "sculpture",
+        "pos": "n.",
+        "cn": "雕塑",
+        "ctx": "There is a competition for beautiful sculptures made from snow and ice.",
+        "blank": "There is a small ______ in the park.",
+        "distractors": [
+          "地球仪",
+          "打字机",
+          "望远镜"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 22,
+    "unit": "Unit 5 Lesson 3 上半篇 (P52)",
+    "passage": "New Year's Eve is on 31st December. People everywhere celebrate in different ways. Some people have a party with friends or family. They stay at home, have some food and watch TV. Other people like going out to celebrate in the streets with music and fireworks.\nCountries around the world have some unusual New Year's Eve traditions. Here's what happens at midnight in different parts of the world:\nIreland: People throw bread at the walls before midnight.\nSpain: People eat 12 grapes – one for each month of the year.\nJapan: People let balloons go into the air. These balloons have got people's wishes for the New Year.\nEcuador: People walk around the block with an empty suitcase. They think about the holidays they will take in the new year.",
+    "quiz": [
+      {
+        "q": "1. What do people in Spain eat at midnight on New Year's Eve?",
+        "opts": [
+          "Bread",
+          "12 grapes",
+          "Ice cream",
+          "Noodles"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Why do people in Ecuador walk with an empty suitcase?",
+        "opts": [
+          "To sell it",
+          "To think about holidays in the new year",
+          "To carry grapes",
+          "To clean the house"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "celebrate",
+        "pos": "v.",
+        "cn": "庆祝",
+        "ctx": "People everywhere celebrate in different ways.",
+        "blank": "We ______ my birthday with a big cake.",
+        "distractors": [
+          "练习",
+          "锻炼",
+          "放松"
+        ]
+      },
+      {
+        "word": "tradition",
+        "pos": "n.",
+        "cn": "传统",
+        "ctx": "Countries around the world have some unusual New Year's Eve traditions.",
+        "blank": "Making dumplings is a Chinese ______.",
+        "distractors": [
+          "菜单",
+          "仪式",
+          "比赛"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 23,
+    "unit": "Unit 5 Lesson 3 下半篇 (P52)",
+    "passage": "Japan: People let balloons go into the air. These balloons have got people's wishes for the New Year.\nEcuador: People walk around the block with an empty suitcase. They think about the holidays they will take in the new year.\nSouth Africa: People throw sofas, chairs and other things out of the window.\nRomania: People put on bear costumes and dance.\nSwitzerland: People drop a scoop of ice cream on the floor.",
+    "quiz": [
+      {
+        "q": "1. In which country do people put on bear costumes and dance?",
+        "opts": [
+          "Japan",
+          "Romania",
+          "Switzerland",
+          "Ecuador"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What do people in Switzerland drop on the floor?",
+        "opts": [
+          "Bread",
+          "A scoop of ice cream",
+          "Grapes",
+          "Balloons"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "fireworks",
+        "pos": "n.",
+        "cn": "烟花",
+        "ctx": "Beautiful fireworks light up the sky at night.",
+        "blank": "Beautiful ______ light up the sky at night.",
+        "distractors": [
+          "双筒望远镜",
+          "筷子",
+          "昆虫"
+        ]
+      },
+      {
+        "word": "invitation",
+        "pos": "n.",
+        "cn": "邀请；请柬",
+        "ctx": "We sent out more than 100 invitations for the party.",
+        "blank": "We sent out more than 100 ______s for the party.",
+        "distractors": [
+          "奖项",
+          "角色",
+          "签名"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 24,
+    "unit": "Unit 6 Lesson 1 上半篇 (P56)",
+    "passage": "Nina: Ky, look at this photo! It's of a dinner my parents went to called 'Dinner in the Sky'.\nKy: Cool! The restaurant is so high above the ground!\nNina: Yes! They bring the table up above the trees. They serve food at 50 metres high.\nKy: Wow! Do you order from a menu?\nNina: No, a chef chooses the food and cooks it in front of the guests. Then, a waiter or waitress brings food to each person.\nKy: That looks really fun, but a bit scary!\nNina: Yes, my mum was scared, but she had fun, too.",
+    "quiz": [
+      {
+        "q": "1. How high do they serve food at 'Dinner in the Sky'?",
+        "opts": [
+          "15 metres",
+          "30 metres",
+          "50 metres",
+          "80 metres"
+        ],
+        "ans": 2
+      },
+      {
+        "q": "2. Who chooses and cooks the food in front of the guests?",
+        "opts": [
+          "A chef",
+          "Nina's mum",
+          "Ky",
+          "Each guest"
+        ],
+        "ans": 0
+      }
+    ],
+    "words": [
+      {
+        "word": "waitress",
+        "pos": "n.",
+        "cn": "女服务员",
+        "ctx": "Then, a waiter or waitress brings food to each person.",
+        "blank": "The ______ brings us more water.",
+        "distractors": [
+          "导演",
+          "发明家",
+          "游客"
+        ]
+      },
+      {
+        "word": "menu",
+        "pos": "n.",
+        "cn": "菜单",
+        "ctx": "Do you order from a menu?",
+        "blank": "The ______ has pictures of all the dishes.",
+        "distractors": [
+          "时间表",
+          "杂志",
+          "地球仪"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 25,
+    "unit": "Unit 6 Lesson 1 下半篇 (P56)",
+    "passage": "Ky: That looks really fun, but a bit scary!\nNina: Yes, my mum was scared, but she had fun, too.\nKy: How much food do they give you?\nNina: A lot! The dessert was my mum's favourite – chocolate cake.\nKy: Sounds good. Your mum was probably happy to get the bill and go home!\nNina: Yes, she was. And she was happy that no glasses or plates fell off the table.\nKy: Do you want to have dinner in the sky?\nNina: No, I like being on the ground, at my favourite fast food restaurant, with a burger in my hand!",
+    "quiz": [
+      {
+        "q": "1. What was Nina's mum's favourite dessert?",
+        "opts": [
+          "Ice cream",
+          "Blueberry pie",
+          "Chocolate cake",
+          "Fruit salad"
+        ],
+        "ans": 2
+      },
+      {
+        "q": "2. Where does Nina prefer to eat?",
+        "opts": [
+          "In the sky",
+          "On a boat",
+          "On the ground with a burger",
+          "In a cave"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "dessert",
+        "pos": "n.",
+        "cn": "甜品；甜点",
+        "ctx": "The dessert was my mum's favourite – chocolate cake.",
+        "blank": "We always order chocolate cake for ______.",
+        "distractors": [
+          "黄油",
+          "调味酱",
+          "沙拉"
+        ]
+      },
+      {
+        "word": "delicious",
+        "pos": "adj.",
+        "cn": "美味的",
+        "ctx": "Grandma's homemade soup is delicious.",
+        "blank": "Grandma's homemade soup is ______.",
+        "distractors": [
+          "奇怪的",
+          "惊恐的",
+          "不寻常的"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 26,
+    "unit": "Unit 6 Lesson 2 第1-2段 (P58)",
+    "passage": "Around the world, people eat with forks, spoons, chopsticks or just their hands.\nEating foods like rice and vegetables with your hands is a skill that takes time to learn. It's important to eat only with the right hand, and that the food only touches the fingers. People who eat this way make the food into a small ball. Then they use their right hand like a spoon to put food in their mouth. It's more difficult than eating a slice of pizza with your hands.",
+    "quiz": [
+      {
+        "q": "1. Which hand is important to use when eating rice with your hands?",
+        "opts": [
+          "Only the left hand",
+          "Only the right hand",
+          "Both hands",
+          "Either hand"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What shape do people make the food into with their fingers?",
+        "opts": [
+          "A square",
+          "A small ball",
+          "A long line",
+          "A triangle"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "probably",
+        "pos": "adv.",
+        "cn": "可能；大概",
+        "ctx": "It will probably rain today.",
+        "blank": "It will ______ rain today.",
+        "distractors": [
+          "一起",
+          "独自",
+          "突然"
+        ]
+      },
+      {
+        "word": "slice",
+        "pos": "n.",
+        "cn": "薄片",
+        "ctx": "It's more difficult than eating a slice of pizza with your hands.",
+        "blank": "I want a ______ of cake for dessert.",
+        "distractors": [
+          "篮子",
+          "梯子",
+          "运河"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 27,
+    "unit": "Unit 6 Lesson 2 第3-5段 (P58)",
+    "passage": "Many people now eat meals with a fork and a knife. Long ago, people ate with only a knife. They put food on the end of the knife and put it in their mouths. People began using forks in the 1600s.\nSpoons are used for serving and eating food around the world. Early people used shells or animal horns to make spoons thousands of years ago.\nOther people use chopsticks to eat. Chopsticks are good for picking up rice and noodles from a bowl. This is also a skill that needs practice! The Chinese first used chopsticks over 3,000 years ago.",
+    "quiz": [
+      {
+        "q": "1. What did early people use to make spoons thousands of years ago?",
+        "opts": [
+          "Plastic",
+          "Shells or animal horns",
+          "Paper",
+          "Glass"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. When did the Chinese first use chopsticks?",
+        "opts": [
+          "In the 1600s",
+          "100 years ago",
+          "Over 3,000 years ago",
+          "500 years ago"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "chopsticks",
+        "pos": "n.",
+        "cn": "筷子",
+        "ctx": "Other people use chopsticks to eat.",
+        "blank": "We eat rice with ______.",
+        "distractors": [
+          "勺子",
+          "木偶",
+          "双筒望远镜"
+        ]
+      },
+      {
+        "word": "spoon",
+        "pos": "n.",
+        "cn": "勺子",
+        "ctx": "Spoons are used for serving and eating food around the world.",
+        "blank": "We eat fried rice with ______s.",
+        "distractors": [
+          "头盔",
+          "篮子",
+          "梯子"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 28,
+    "unit": "Unit 6 Lesson 3 上半篇 (P60)",
+    "passage": "Poland is famous for its pierogi. Pierogi are a national dish of Poland. They're filled with many different things, such as cheese and potatoes or meat. They're delicious fried with butter and onion. Pierogi can even have sweet fillings, like blueberries.\nIn Indonesia, satay is very popular. Satay is meat, such as chicken or rabbit, on a stick. It's cooked over a fire. People like to eat satay with sweet or spicy sauces. You can buy it on the street in many parts of Indonesia. It's very tasty. Noodle and rice dishes are also popular in Indonesia.",
+    "quiz": [
+      {
+        "q": "1. What sweet filling can pierogi have?",
+        "opts": [
+          "Chocolate",
+          "Blueberries",
+          "Grapes",
+          "Lemons"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. How is Indonesian satay cooked?",
+        "opts": [
+          "In cold water",
+          "Over a fire",
+          "In the snow",
+          "In space"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "butter",
+        "pos": "n.",
+        "cn": "黄油",
+        "ctx": "They're delicious fried with butter and onion.",
+        "blank": "Would you like some ______ for your bread?",
+        "distractors": [
+          "甜品",
+          "沙拉",
+          "意大利面"
+        ]
+      },
+      {
+        "word": "sauce",
+        "pos": "n.",
+        "cn": "调味酱；酱汁",
+        "ctx": "People like to eat satay with sweet or spicy sauces.",
+        "blank": "I like tomato ______ on my pasta.",
+        "distractors": [
+          "能源",
+          "雨衣",
+          "雕像"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 29,
+    "unit": "Unit 6 Lesson 3 下半篇 (P60)",
+    "passage": "On the coast of Latin America, in countries such as Peru, people eat a lot of fish. Ceviche is a famous dish made from fish with lemon or lime juice and spices. The fish is very fresh. It's very healthy food and it is delicious. People usually eat vegetable dishes at the same time, such as salad, sweetcorn, sweet potatoes, nuts or onions. Ceviche is now popular around the world.\nIn Ethiopia, people eat a lot of meat and vegetables in spicy sauces. Food is served on a large plate for friends and family to share. People use a special bread, called injera, as a spoon to eat these delicious dishes. They scoop up meat and vegetables and eat them with the bread.",
+    "quiz": [
+      {
+        "q": "1. What is ceviche made from?",
+        "opts": [
+          "Chicken and butter",
+          "Fresh fish with lemon or lime juice and spices",
+          "Cheese and potatoes",
+          "Beef and noodles"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. How do people in Ethiopia use the special bread called injera?",
+        "opts": [
+          "As a plate lid",
+          "As a spoon to scoop up food",
+          "As a dessert",
+          "As a drink"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "salad",
+        "pos": "n.",
+        "cn": "沙拉",
+        "ctx": "We made a fresh salad.",
+        "blank": "We made a fresh ______.",
+        "distractors": [
+          "黄油",
+          "菜单",
+          "狂欢节"
+        ]
+      },
+      {
+        "word": "spaghetti",
+        "pos": "n.",
+        "cn": "意大利面",
+        "ctx": "My favourite food is spaghetti.",
+        "blank": "My favourite food is ______.",
+        "distractors": [
+          "打字机",
+          "地球仪",
+          "滑板"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 30,
+    "unit": "Unit 7 Lesson 1 (P68)",
+    "passage": "Ahmed: Hey, Nur. What are you doing?\nNur: I'm reading about this year's Our Town Bike Race.\nAhmed: Let's enter the race together. What do you think?\nNur: I'm not sure. It's too difficult!\nAhmed: You can do it. You're great on your bike.\nNur: I don't know. A lot of the racers are very fast. They jump, too! I can't jump well.\nAhmed: Let's practise the jumps then. We can practise after school.\nNur: OK, yes. I don't want to fall during the race. Hmm ... maybe I need a better helmet, too.\nAhmed: Nur, if you're scared, don't enter.\nNur: Scared? Me? No way! I'm not scared! I'll enter.\nAhmed: Are you sure?\nNur: Yes, I'm sure. And who knows? Maybe I'll be the first person to cross the finish line!\nAhmed: Well, we may not be the winners, but we can still have fun!",
+    "quiz": [
+      {
+        "q": "1. What skill does Nur want to practise after school?",
+        "opts": [
+          "Swimming",
+          "The jumps on his bike",
+          "Skating",
+          "Bowling"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What does Nur hope to be the first person to do?",
+        "opts": [
+          "Buy a new bike",
+          "Cross the finish line",
+          "Take a photo",
+          "Cook dinner"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "helmet",
+        "pos": "n.",
+        "cn": "头盔",
+        "ctx": "Maybe I need a better helmet, too.",
+        "blank": "Maybe I need a better ______, too.",
+        "distractors": [
+          "雨衣",
+          "勺子",
+          "篮子"
+        ]
+      },
+      {
+        "word": "finish line",
+        "pos": "n.",
+        "cn": "终点线",
+        "ctx": "Maybe I'll be the first person to cross the finish line!",
+        "blank": "Maybe I'll be the first person to cross the ______!",
+        "distractors": [
+          "入口",
+          "地下室",
+          "阳台"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 31,
+    "unit": "Unit 7 Lesson 2 第1-2段 (P70)",
+    "passage": "Taekwondo is the national sport of South Korea, but it's practised around the world by more than 70 million people. People think of taekwondo as both an art and a sport.\nIt's an art because you use your mind and body to make movements. The Korean word taekwondo means the way of the foot and the hand. In taekwondo, people kick and hit. They must control their feet and hands. They learn to use the mind for each movement. This makes taekwondo artistic.",
+    "quiz": [
+      {
+        "q": "1. Which country is taekwondo the national sport of?",
+        "opts": [
+          "Japan",
+          "South Korea",
+          "China",
+          "Thailand"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What does the Korean word 'taekwondo' mean?",
+        "opts": [
+          "The way of the sword",
+          "The way of the foot and the hand",
+          "Fast running",
+          "Winter snow"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "control",
+        "pos": "v.",
+        "cn": "控制",
+        "ctx": "They must control their feet and hands.",
+        "blank": "They must ______ their feet and hands.",
+        "distractors": [
+          "放松",
+          "漂浮",
+          "庆祝"
+        ]
+      },
+      {
+        "word": "mind",
+        "pos": "n.",
+        "cn": "头脑；心思",
+        "ctx": "It's an art because you use your mind and body to make movements.",
+        "blank": "They learn to use the ______ for each movement.",
+        "distractors": [
+          "风景",
+          "村庄",
+          "菜单"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 32,
+    "unit": "Unit 7 Lesson 2 第3-4段 (P70)",
+    "passage": "Taekwondo is a sport because two people fight and there's a winner of the match. There are many types of contests. People train for years to get ready for big championships, including the Olympics. To become an Olympic champion, you must work very hard and never give up.\nTaekwondo is fun, but it's hard work, too. One young man explains why he loves the sport. 'Taekwondo has changed my life, making me better in everything I do. It has made me stronger and more confident. It has taught me to never give up.'",
+    "quiz": [
+      {
+        "q": "1. What must you do to become an Olympic champion?",
+        "opts": [
+          "Work very hard and never give up",
+          "Only practise on Sundays",
+          "Buy expensive shoes",
+          "Watch TV"
+        ],
+        "ans": 0
+      },
+      {
+        "q": "2. How has taekwondo changed the young man?",
+        "opts": [
+          "Made him sleepy",
+          "Made him stronger and more confident",
+          "Made him scared",
+          "Made him famous"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "champion",
+        "pos": "n.",
+        "cn": "冠军",
+        "ctx": "To become an Olympic champion, you must work very hard.",
+        "blank": "To become an Olympic ______, you must work very hard.",
+        "distractors": [
+          "导演",
+          "游客",
+          "发明家"
+        ]
+      },
+      {
+        "word": "give up",
+        "pos": "phr.",
+        "cn": "放弃",
+        "ctx": "It has taught me to never give up.",
+        "blank": "It has taught me to never ______.",
+        "distractors": [
+          "做好准备",
+          "起床",
+          "散步"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 33,
+    "unit": "Unit 7 Lesson 3 (P72)",
+    "passage": "Reporter: How old are you?\nLaura: I'm sixteen and Paulo is seventeen.\nReporter: Tell me about your day.\nLaura: We get up at six o'clock every morning and we practise for an hour before school.\nPaulo: Then after school we practise again for two hours!\nReporter: It's hard work, then!\nLaura: Yes, but we love it. We want to be Olympic champions!\nReporter: Are you training at the moment?\nPaulo: Yes, we are. We're training for a big competition in Lisbon next week.\nLaura: Our coach is teaching us new things for the competition. They're very difficult.\nReporter: Are you excited about the competition?\nPaulo: Yes! Young ice dancers from many countries are coming. It's very exciting.\nReporter: What music are you skating to?\nLaura: It's from the film The Lion King.\nReporter: Well, good luck!\nPaulo and Laura: Thanks!",
+    "quiz": [
+      {
+        "q": "1. How many hours in total do Laura and Paulo practise each school day?",
+        "opts": [
+          "One hour",
+          "Two hours",
+          "Three hours",
+          "Five hours"
+        ],
+        "ans": 2
+      },
+      {
+        "q": "2. Which film is their skating music from?",
+        "opts": [
+          "The Smurfs",
+          "Spirited Away",
+          "The Lion King",
+          "My Neighbor Totoro"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "train",
+        "pos": "v.",
+        "cn": "训练",
+        "ctx": "We're training for a big competition in Lisbon next week.",
+        "blank": "People ______ for years for the Olympics.",
+        "distractors": [
+          "漂浮",
+          "隐藏",
+          "生存"
+        ]
+      },
+      {
+        "word": "get ready",
+        "pos": "phr.",
+        "cn": "做好准备",
+        "ctx": "People train for years to get ready for big championships.",
+        "blank": "People train for years to ______ for big championships.",
+        "distractors": [
+          "放弃",
+          "入睡",
+          "扔掉"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 34,
+    "unit": "Unit 8 Lesson 1 第1-3段 (P76)",
+    "passage": "Where do you live? In a house or a cottage? Or in a flat in the city? In Japan, some people live inside footballs.\nOK, they're not real footballs! They're football-shaped houses. They are very strong. They keep people safe in an earthquake or a flood. Some people keep these houses in their gardens as a second home. Other people live in them all the time.\nThese houses can be very small — the smallest are for pets to live in. There are also bigger houses with three floors. In these homes, the bedrooms are above the living room. You climb a ladder to get into bed. The football houses haven't got basements because they don't sit on the ground. They haven't got balconies, either!",
+    "quiz": [
+      {
+        "q": "1. Why are football-shaped houses in Japan built very strong?",
+        "opts": [
+          "To fly in the sky",
+          "To keep people safe in an earthquake or a flood",
+          "To roll down hills",
+          "To float in space"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. How do you get into bed in the three-floor football house?",
+        "opts": [
+          "Take a lift",
+          "Climb a ladder",
+          "Jump on a trampoline",
+          "Walk down stairs"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "basement",
+        "pos": "n.",
+        "cn": "地下室",
+        "ctx": "The football houses haven't got basements.",
+        "blank": "The football houses haven't got ______s.",
+        "distractors": [
+          "阳台",
+          "花园",
+          "图书馆"
+        ]
+      },
+      {
+        "word": "balcony",
+        "pos": "n.",
+        "cn": "阳台",
+        "ctx": "They haven't got balconies, either!",
+        "blank": "Our flat has got a sunny ______.",
+        "distractors": [
+          "地下室",
+          "运河",
+          "入口"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 35,
+    "unit": "Unit 8 Lesson 2 第1-3段 (P78)",
+    "passage": "What's your routine? You probably get up, go to school, relax and then go to bed. Scientists working at the ISS do the same things we do – they just do them very differently.\nIn the morning, scientists use a towel and special soap to clean their bodies. There is very little water on the ISS, so scientists can't have a shower or a bath. They don't use water to brush their teeth, either.\nIn space, everything floats. When it's time to eat, scientists eat food from packages. Food doesn't stay on plates, so they don't use them! Sometimes, space shuttles bring fruit and vegetables from Earth.",
+    "quiz": [
+      {
+        "q": "1. How do scientists clean their bodies on the ISS?",
+        "opts": [
+          "Have a hot bath",
+          "Use a towel and special soap",
+          "Swim in a pool",
+          "Stand in the rain"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Why don't scientists use plates in space?",
+        "opts": [
+          "Plates are too expensive",
+          "Everything floats so food doesn't stay on plates",
+          "They never eat",
+          "Plates are too big"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "float",
+        "pos": "v.",
+        "cn": "漂浮",
+        "ctx": "In space, everything floats.",
+        "blank": "In space, everything ______s.",
+        "distractors": [
+          "系牢",
+          "训练",
+          "庆祝"
+        ]
+      },
+      {
+        "word": "relax",
+        "pos": "v.",
+        "cn": "放松",
+        "ctx": "You probably get up, go to school, relax and then go to bed.",
+        "blank": "You probably get up, go to school, ______ and then go to bed.",
+        "distractors": [
+          "控制",
+          "生存",
+          "锻炼"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 36,
+    "unit": "Unit 8 Lesson 3 上半篇 (P80)",
+    "passage": "Barcelona is the second largest city in Spain, the capital of the region of Catalonia. It's a lively city with lots to see and do. Here are some fantastic places you must see in Barcelona!\nTake a walk on La Rambla, a large street in Barcelona's city centre. You can go shopping or have a snack in a café. There are also people playing music, dancing and acting in the streets. It's a great place to have fun!\nThe Sagrada Familia is the largest church in Barcelona. Workers started building it 130 years ago, and it's still not finished! Every year, 2.8 million people visit the Sagrada Familia. It's the most popular tourist attraction in Spain.",
+    "quiz": [
+      {
+        "q": "1. What is La Rambla in Barcelona?",
+        "opts": [
+          "A quiet village",
+          "A large street in the city centre",
+          "A mountain",
+          "An island"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What is surprising about the Sagrada Familia?",
+        "opts": [
+          "It was built in one week",
+          "Workers started 130 years ago and it's still not finished",
+          "It is painted blue",
+          "It floats on water"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "fasten",
+        "pos": "v.",
+        "cn": "系牢；扣紧",
+        "ctx": "Please fasten your seatbelt.",
+        "blank": "Please ______ your seatbelt.",
+        "distractors": [
+          "漂浮",
+          "放松",
+          "庆祝"
+        ]
+      },
+      {
+        "word": "ladder",
+        "pos": "n.",
+        "cn": "梯子",
+        "ctx": "You climb a ladder to get into bed.",
+        "blank": "You climb a ______ to get into bed.",
+        "distractors": [
+          "篮子",
+          "勺子",
+          "头盔"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 37,
+    "unit": "Unit 8 Lesson 3 下半篇 (P80)",
+    "passage": "Visit Parc de la Ciutadella one afternoon. It's a good place to walk or ride a bike. There are many trees and a big lake. You can take a boat ride on the lake. There are several museums and a zoo in the park. There's a castle, too. It's called The Castle of the Three Dragons. Next to the castle is the Hivernacle, a large indoor garden.\nAre you ready to relax outside the city? Then go to Barceloneta Beach and spend the day by the sea. It's just ten minutes from the city centre. You can go by train or taxi.",
+    "quiz": [
+      {
+        "q": "1. What is the Hivernacle next to the castle?",
+        "opts": [
+          "A cinema",
+          "A large indoor garden",
+          "A sports centre",
+          "A bookshop"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. How far is Barceloneta Beach from the city centre?",
+        "opts": [
+          "Just ten minutes",
+          "Two hours",
+          "80 kilometres",
+          "Three days"
+        ],
+        "ans": 0
+      }
+    ],
+    "words": [
+      {
+        "word": "garden",
+        "pos": "n.",
+        "cn": "花园",
+        "ctx": "Next to the castle is the Hivernacle, a large indoor garden.",
+        "blank": "Next to the castle is a large indoor ______.",
+        "distractors": [
+          "地下室",
+          "自助食堂",
+          "终点线"
+        ]
+      },
+      {
+        "word": "view",
+        "pos": "n.",
+        "cn": "风景；视野",
+        "ctx": "You can get a great view of the amusement park.",
+        "blank": "You can get a great ______ of the harbour.",
+        "distractors": [
+          "头脑",
+          "传统",
+          "菜单"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 38,
+    "unit": "Unit 9 Lesson 1 (P88)",
+    "passage": "Are you looking to take a holiday in an unusual place? These villages are popular with tourists and are anything but ordinary.\nJúzcar, Spain: This village was white until 2011. Now, Júzcar is blue. The film company Sony painted the buildings blue to celebrate the film The Smurfs, about small, blue characters. Even the church and the town hall are blue! When Sony came to clean the blue from the buildings, the people said, 'No'. They wanted to keep their town blue.\nShani Shingnapur, India: The village of Shani Shingnapur is like any other village, with one big difference: there are no doors here. Villagers feel safe, so they don't put doors on houses or shops. The bank does have a door, but there are no locks. And there's very little crime in the village.\nGiethoorn, Netherlands: This small village of under 3,000 people is another example of a village that hasn't got something most villages have: roads. This village has got only canals, pavements and bridges. Cars must stay out of the village. People walk or use boats instead.",
+    "quiz": [
+      {
+        "q": "1. What is unusual about Houses in Shani Shingnapur, India?",
+        "opts": [
+          "They are blue",
+          "There are no doors on houses or shops",
+          "They have no roofs",
+          "They are shaped like footballs"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Why must cars stay out of Giethoorn in the Netherlands?",
+        "opts": [
+          "It has got only canals, pavements and bridges",
+          "It is on a mountain",
+          "It is too cold",
+          "There are no bridges"
+        ],
+        "ans": 0
+      }
+    ],
+    "words": [
+      {
+        "word": "ordinary",
+        "pos": "adj.",
+        "cn": "普通的；平常的",
+        "ctx": "These villages are popular with tourists and are anything but ordinary.",
+        "blank": "These villages are anything but ______.",
+        "distractors": [
+          "聪明的",
+          "惊讶的",
+          "美味的"
+        ]
+      },
+      {
+        "word": "village",
+        "pos": "n.",
+        "cn": "村庄",
+        "ctx": "This village was white until 2011.",
+        "blank": "This ______ was white until 2011.",
+        "distractors": [
+          "剧院",
+          "图书馆",
+          "餐厅"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 39,
+    "unit": "Unit 9 Lesson 2 (P90)",
+    "passage": "The Montgolfier brothers were from France and they were the inventors of the hot-air balloon. They used smoke from a fire and filled a silk bag. Then they tied this bag to a basket. The brothers wanted to try their invention. Their first flight was in September of 1783, in front of the king's castle. Many people were there to watch, including the king and queen. The hot-air balloon got up in the sky and stayed in the air for almost nine minutes!\nThe scientist Jean-François Pilâtre de Rozier and his friend François Laurent were the first people to travel in a hot-air balloon. They made their journey two months later, on 21st November, 1783. The King of France watched this flight, too. This time, the hot-air balloon was up in the air for 20 minutes. Then it landed in a field.",
+    "quiz": [
+      {
+        "q": "1. How long did the first hot-air balloon flight stay in the air in September 1783?",
+        "opts": [
+          "Almost nine minutes",
+          "20 minutes",
+          "Two hours",
+          "Two months"
+        ],
+        "ans": 0
+      },
+      {
+        "q": "2. Where did the balloon land after the 20-minute flight in November 1783?",
+        "opts": [
+          "On a lake",
+          "In a field",
+          "On the castle roof",
+          "In the sea"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "inventor",
+        "pos": "n.",
+        "cn": "发明家",
+        "ctx": "They were the inventors of the hot-air balloon.",
+        "blank": "They were the ______s of the hot-air balloon.",
+        "distractors": [
+          "导演",
+          "冠军",
+          "女服务员"
+        ]
+      },
+      {
+        "word": "flight",
+        "pos": "n.",
+        "cn": "飞行；航程",
+        "ctx": "Their first flight was in September of 1783.",
+        "blank": "Their first ______ was in September of 1783.",
+        "distractors": [
+          "友谊",
+          "仪式",
+          "雕塑"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 40,
+    "unit": "Unit 9 Lesson 3 (P92)",
+    "passage": "Elsa, 10 (Mexico): We had a great holiday in Mexico last summer. We travelled by car from our home in Texas, and we took our bikes with us! Every day we went swimming and cycling. We visited some very interesting museums and very old temples. We ate at some fantastic restaurants. Mexican food is delicious. At night we slept in tents. We had two tents – one for my mum and dad and one for my sister and me. My sister told me stories every night. Sometimes I was very scared!\nBeto, 12 (New York): I went on holiday to New York with my family last year. We went by plane and we stayed in a hotel in the city centre. The shops in New York are great, but some were very expensive! I bought three pairs of jeans! They were cheap. I ate lots of delicious American food. I really loved the burgers! One evening we saw a play at a theatre on Broadway. It was exciting because there was a famous actor in it!",
+    "quiz": [
+      {
+        "q": "1. Where did Elsa and her family sleep at night in Mexico?",
+        "opts": [
+          "In a castle",
+          "In two tents",
+          "On a boat",
+          "In a hotel"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. What did Beto buy in New York because they were cheap?",
+        "opts": [
+          "Three hats",
+          "Three pairs of jeans",
+          "Two bikes",
+          "Comics"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "canal",
+        "pos": "n.",
+        "cn": "运河",
+        "ctx": "This village has got only canals, pavements and bridges.",
+        "blank": "This village has got only ______s, pavements and bridges.",
+        "distractors": [
+          "梯子",
+          "阳台",
+          "地下室"
+        ]
+      },
+      {
+        "word": "basket",
+        "pos": "n.",
+        "cn": "篮子",
+        "ctx": "Then they tied this bag to a basket.",
+        "blank": "Then they tied this bag to a ______.",
+        "distractors": [
+          "头盔",
+          "打字机",
+          "地球仪"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 41,
+    "unit": "Unit 10 Lesson 1 (P96)",
+    "passage": "Cinecittà is a film studio near Rome, Italy. It's the largest film studio in Europe. At Cinecittà, people make films, TV shows and adverts. The studio is very big – it's got 22 stages, 21 make-up rooms and more than 300 dressing rooms!\nThe studio opened in 1937. The famous Italian film director, Federico Fellini, made many films at Cinecittà. Many famous American films came from this studio, too.\nIn 2011, Cinecittà opened for tours. Today, you can visit the studios and walk around the sets. Some sets are there all the time, like the set of Ancient Rome. You can see costumes and watch films that were made there. You can also learn about the history of the studio and the films. You may even see a famous actor or director during your visit. If you do, be sure to get an autograph!",
+    "quiz": [
+      {
+        "q": "1. Where is the Cinecittà film studio located?",
+        "opts": [
+          "Near Paris, France",
+          "Near Rome, Italy",
+          "In Tokyo, Japan",
+          "In Sydney, Australia"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. When did Cinecittà open for tours?",
+        "opts": [
+          "In 1937",
+          "In 1985",
+          "In 2011",
+          "In 2017"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "director",
+        "pos": "n.",
+        "cn": "导演",
+        "ctx": "You may even see a famous actor or director during your visit.",
+        "blank": "The famous Italian film ______ made many films here.",
+        "distractors": [
+          "发明家",
+          "游客",
+          "女服务员"
+        ]
+      },
+      {
+        "word": "autograph",
+        "pos": "n.",
+        "cn": "亲笔签名",
+        "ctx": "If you do, be sure to get an autograph!",
+        "blank": "If you see a famous actor, be sure to get an ______!",
+        "distractors": [
+          "请柬",
+          "时间表",
+          "望远镜"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 42,
+    "unit": "Unit 10 Lesson 2 (P98)",
+    "passage": "If you like to watch animated films and TV shows, you may know some of the works from Studio Ghibli.\nStudio Ghibli is a Japanese film company that makes anime films. Anime is a style of Japanese cartoon that is used in TV programmes and feature films. Anime films have often got adventurous characters and a lot of action. They can be like watching dreams come to life!\nStudio Ghibli opened in 1985, thanks to Japanese directors Isao Takahata and Hayao Miyazaki. The company makes short films and TV cartoons, but it's most famous for its anime feature films. Miyazaki directed some of the studio's most famous films, including My Neighbor Totoro (1988), Spirited Away (2001) and Howl's Moving Castle (2004). Each of these films won awards in Japan and around the world.",
+    "quiz": [
+      {
+        "q": "1. When did Studio Ghibli open?",
+        "opts": [
+          "In 1937",
+          "In 1985",
+          "In 2001",
+          "In 2004"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Which of these films was directed by Hayao Miyazaki?",
+        "opts": [
+          "The Smurfs",
+          "Spirited Away",
+          "The Lion King",
+          "Code Monkey"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "animated",
+        "pos": "adj.",
+        "cn": "动画的",
+        "ctx": "If you like to watch animated films and TV shows, you may know Studio Ghibli.",
+        "blank": "Do you like to watch ______ films?",
+        "distractors": [
+          "普通的",
+          "隐藏的",
+          "惊恐的"
+        ]
+      },
+      {
+        "word": "character",
+        "pos": "n.",
+        "cn": "角色；人物",
+        "ctx": "Anime films have often got adventurous characters and a lot of action.",
+        "blank": "Anime films have often got adventurous ______s.",
+        "distractors": [
+          "昆虫",
+          "雕塑",
+          "运河"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 43,
+    "unit": "Unit 10 Lesson 3 (P100)",
+    "passage": "Interviewer: When did you start lessons at the school?\nDina: I started when I was eleven. I was a student there for six years.\nInterviewer: Wow! Did you have an audition?\nDina: Yes, I did. It was difficult. The school only takes three students a year.\nInterviewer: What did you do at the audition? And were you nervous?\nDina: I sang several songs from my favourite musicals. And yes, I was nervous. Now, I don't get as nervous. I try to relax, but sometimes I'm still a bit scared to go on stage.\nInterviewer: Did you enjoy life at drama school?\nDina: Yes, I did. It was hard work, but I'm very lucky. The teachers helped me get better. I learned how to audition and talk to directors. Now, I've got roles in several films. It's really exciting!",
+    "quiz": [
+      {
+        "q": "1. How many students does Dina's drama school take each year?",
+        "opts": [
+          "Only three students",
+          "Eleven students",
+          "Twenty students",
+          "100 students"
+        ],
+        "ans": 0
+      },
+      {
+        "q": "2. What did Dina do at her audition?",
+        "opts": [
+          "Danced hip-hop",
+          "Sang several songs from her favourite musicals",
+          "Played the violin",
+          "Told a funny story"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "award",
+        "pos": "n.",
+        "cn": "奖项",
+        "ctx": "Each of these films won awards in Japan and around the world.",
+        "blank": "Each of these films won ______s in Japan.",
+        "distractors": [
+          "礼物",
+          "头盔",
+          "篮子"
+        ]
+      },
+      {
+        "word": "company",
+        "pos": "n.",
+        "cn": "公司",
+        "ctx": "Studio Ghibli is a Japanese film company.",
+        "blank": "Studio Ghibli is a Japanese film ______.",
+        "distractors": [
+          "村庄",
+          "自助食堂",
+          "图书馆"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 44,
+    "unit": "Unit 11 Lesson 1 (P108)",
+    "passage": "My name is Juliana, and I love travelling. Last summer, I went on holiday to Costa Rica. It was fantastic! I love animals, and the animals in Costa Rica are cooler than any I've seen.\nFirst, we spent two days in the Barra Honda National Park. This park is famous for its large caves. We wanted to see the bats that live there. There are thousands of them! We saw them in the day, when they were sleeping. We brought torches to help us see them better because it's dark in the caves. At night, the bats fly out of the caves and eat insects – lots of insects. Did you know that some bats can eat 1,000 insects in a single hour? That's amazing!",
+    "quiz": [
+      {
+        "q": "1. Why did Juliana and her family bring torches into the caves?",
+        "opts": [
+          "To cook food",
+          "Because it's dark in the caves",
+          "To scare the bats",
+          "To keep warm"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. How many insects can some bats eat in a single hour?",
+        "opts": [
+          "10 insects",
+          "100 insects",
+          "1,000 insects",
+          "10,000 insects"
+        ],
+        "ans": 2
+      }
+    ],
+    "words": [
+      {
+        "word": "binoculars",
+        "pos": "n.",
+        "cn": "双筒望远镜",
+        "ctx": "We used binoculars to watch the birds high in the trees.",
+        "blank": "We used ______ to watch the birds high in the trees.",
+        "distractors": [
+          "筷子",
+          "烟花",
+          "打字机"
+        ]
+      },
+      {
+        "word": "insect",
+        "pos": "n.",
+        "cn": "昆虫",
+        "ctx": "At night, the bats fly out of the caves and eat insects.",
+        "blank": "Some bats can eat 1,000 ______s in a single hour.",
+        "distractors": [
+          "木偶",
+          "雕塑",
+          "角色"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 45,
+    "unit": "Unit 11 Lesson 2 (P110)",
+    "passage": "When people think of cats and dogs, they probably don't think of friendship. But sometimes, cats and dogs can be friends. In fact, for some cheetahs, dogs have an important role in their lives.\nSometimes, a cheetah has got a mother who can't (or won't) care for it. Without a mother, the cheetah needs a friend to play with. In some zoos in the United States, this friend is a puppy.\nPancake, a cheetah cub, has a best friend in Dayo, a puppy. They've got the same birthday, and they met as babies. It was love at first sight! They played really well together. Now, they're best friends. They think that they're family! Dayo is a Rhodesian Ridgeback, a type of large dog. When he's older, he'll be the same size as Pancake. This way, they can always be friends!",
+    "quiz": [
+      {
+        "q": "1. Who is Dayo?",
+        "opts": [
+          "A baby penguin",
+          "A Rhodesian Ridgeback puppy",
+          "A zookeeper",
+          "A small cat"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Why can Dayo and Pancake always be friends when Dayo is older?",
+        "opts": [
+          "Dayo can fly",
+          "Dayo will be the same size as Pancake",
+          "They live in the wild",
+          "They eat the same grass"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "friendship",
+        "pos": "n.",
+        "cn": "友谊",
+        "ctx": "When people think of cats and dogs, they probably don't think of friendship.",
+        "blank": "Their ______ started when they met as babies.",
+        "distractors": [
+          "仪式",
+          "比赛",
+          "飞行"
+        ]
+      },
+      {
+        "word": "unusual",
+        "pos": "adj.",
+        "cn": "不寻常的；独特的",
+        "ctx": "Countries around the world have some unusual traditions.",
+        "blank": "Are you looking to take a holiday in an ______ place?",
+        "distractors": [
+          "普通的",
+          "相同的",
+          "安静的"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 46,
+    "unit": "Unit 12 Lesson 1 (P116)",
+    "passage": "Janine: Well, don't get too excited. It's not actual treasure. It's just a notebook and some objects in a box. If we like them, we can take one. We're going to bring a toy to leave for the next person. We're also going to write our names in the notebook, to show we were there.\nKevin: Are there geocaches near us?\nJanine: Yes! They're everywhere! There are about 2 million geocaches hidden around the world. The app shows nine hidden in the forest near our house.\nKevin: OK, great! I'm going to come with you.\nJanine: Cool! We're going to leave at 8.30. Bring your raincoat and boots. It's going to rain in the morning but get sunny later. Who knows? We may see a rainbow!",
+    "quiz": [
+      {
+        "q": "1. How many geocaches are hidden in the forest near Janine's house?",
+        "opts": [
+          "Two",
+          "Nine",
+          "Twenty-two",
+          "2 million"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Why does Janine tell Kevin to bring his raincoat and boots?",
+        "opts": [
+          "They are going swimming",
+          "It's going to rain in the morning",
+          "It is snowing",
+          "They are crossing a river"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "hidden",
+        "pos": "adj.",
+        "cn": "隐藏的",
+        "ctx": "There are about 2 million geocaches hidden around the world.",
+        "blank": "The app shows nine boxes ______ in the forest.",
+        "distractors": [
+          "受欢迎的",
+          "动画的",
+          "美味的"
+        ]
+      },
+      {
+        "word": "raincoat",
+        "pos": "n.",
+        "cn": "雨衣",
+        "ctx": "Bring your raincoat and boots.",
+        "blank": "Bring your ______ and boots because it's going to rain.",
+        "distractors": [
+          "制服",
+          "演出服",
+          "头盔"
+        ]
+      }
+    ]
+  },
+  {
+    "day": 47,
+    "unit": "Unit 12 Lesson 2 (P118)",
+    "passage": "Many scientists are interested in the heat that comes from deep in the Earth. People can use this underground heat to make a type of energy called geothermal energy. We need energy to light our homes, to cook and so on. We already get clean energy from the sun and the wind. But scientists think that geothermal energy will give even more people clean energy in the future.\nIn the Amazon of Peru, there is a very unusual heat source. It's called the Boiling River. For years, people told stories about a river that boiled. The river killed anything that fell into it. But did it really exist?",
+    "quiz": [
+      {
+        "q": "1. Where does geothermal energy come from?",
+        "opts": [
+          "From the moon",
+          "From underground heat deep in the Earth",
+          "From ocean waves",
+          "From wind"
+        ],
+        "ans": 1
+      },
+      {
+        "q": "2. Where is the Boiling River located?",
+        "opts": [
+          "In the Canadian Arctic",
+          "In the Amazon of Peru",
+          "In Spain",
+          "In South Korea"
+        ],
+        "ans": 1
+      }
+    ],
+    "words": [
+      {
+        "word": "energy",
+        "pos": "n.",
+        "cn": "能源；能量",
+        "ctx": "We already get clean energy from the sun and the wind.",
+        "blank": "We need ______ to light our homes and to cook.",
+        "distractors": [
+          "风景",
+          "头脑",
+          "传统"
+        ]
+      },
+      {
+        "word": "survive",
+        "pos": "v.",
+        "cn": "生存；存活",
+        "ctx": "Nothing can survive in the boiling water.",
+        "blank": "Few plants can ______ in such hot water.",
+        "distractors": [
+          "漂浮",
+          "放松",
+          "庆祝"
+        ]
+      }
+    ]
+  }
+];
+
+    const state = {
+      currentDay: 1,
+      parentPin: "0000",
+      soundOn: true,
+      stage: 1,
+      mathStreak: 0,
+      mathResets: 0,
+      mathTarget: 0,
+      mathOpText: "",
+      mathLastType: "",
+      isRecording: false,
+      recSeconds: 0,
+      recTimerId: null,
+      recognition: null,
+      transcript: "",
+      readingAttempts: 0,
+      quizAnswers: {},
+      vocabQueue: [],
+      vocabIdx: 0,
+      vocabSubStep: 0,
+      vocabErrors: {}
+    };
+
+    state.completedDays = [];
+    state.weakWords = [];
+    function todayKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+    try {
+      const savedDay = parseInt(localStorage.getItem("ww3_day"), 10);
+      if (!isNaN(savedDay) && CURRICULUM.some(c => c.day === savedDay)) state.currentDay = savedDay;
+      const savedPin = localStorage.getItem("ww3_pin");
+      if (savedPin && /^\d{4}$/.test(savedPin)) state.parentPin = savedPin;
+      const savedDone = JSON.parse(localStorage.getItem("ww3_done_days") || "[]");
+      if (Array.isArray(savedDone)) state.completedDays = savedDone;
+      const savedWeak = JSON.parse(localStorage.getItem("ww3_weak_words") || "[]");
+      if (Array.isArray(savedWeak)) state.weakWords = savedWeak;
+      const lastPassDate = localStorage.getItem("ww3_last_pass_date");
+      const lastPassDay = parseInt(localStorage.getItem("ww3_last_pass_day"), 10);
+      // 跨天后自动推进到下一关
+      if (lastPassDate && lastPassDate !== todayKey() && !isNaN(lastPassDay) && state.currentDay === lastPassDay && lastPassDay < 47) {
+        state.currentDay = lastPassDay + 1;
+        localStorage.setItem("ww3_day", String(state.currentDay));
+      }
+    } catch (e) {}
+
+    const $ = id => document.getElementById(id);
+
+    // 轻量合成钢琴清脆提示音（无需加载外部音频文件）
+    let audioCtx = null;
+    function playTone(kind) {
+      if (!state.soundOn) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!audioCtx) audioCtx = new AudioContextClass();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const notes = kind === "win" ? [523.25, 659.25, 783.99, 1046.5] : (kind === "ok" ? [587.33, 880] : [240]);
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = kind === "err" ? "triangle" : "sine";
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.08, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.22);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.24);
+        });
+      } catch (e) {}
+    }
+
+    function getCurrentLesson() {
+      return CURRICULUM.find(c => c.day === state.currentDay) || CURRICULUM[0];
+    }
+
+    function updateHeader() {
+      const lesson = getCurrentLesson();
+      $("dayBanner").textContent = `Day ${String(lesson.day).padStart(2, "0")} · ${lesson.unit}`;
+      const d = new Date();
+      $("todayDatePill").textContent = `${d.getMonth() + 1}月${d.getDate()}日`;
+    }
+
+    function updateNav() {
+      [1, 2, 3].forEach(i => {
+        const el = $("navStep" + i);
+        el.classList.remove("active", "done");
+        if (state.stage > i) el.classList.add("done");
+        else if (state.stage === i) el.classList.add("active");
+      });
+      $("navSub1").textContent = state.stage > 1 ? "已完成" : `${state.mathStreak} / 10`;
+      $("navSub2").textContent = state.stage > 2 ? "已完成" : (state.stage === 2 ? "进行中" : "待开启");
+      $("navSub3").textContent = state.stage > 3 ? "已完成" : (state.stage === 3 ? `${Math.min(state.vocabIdx + 1, state.vocabQueue.length)} / ${state.vocabQueue.length}` : "待开启");
+
+      $("stage1").classList.toggle("hidden", state.stage !== 1);
+      $("stage2").classList.toggle("hidden", state.stage !== 2);
+      $("stage3").classList.toggle("hidden", state.stage !== 3);
+      $("stage4").classList.toggle("hidden", state.stage !== 4);
+    }
+
+    // ---------- 第一关：北京小学三年级标准口算 ----------
+    function renderMathDots() {
+      const box = $("mathDots");
+      box.innerHTML = "";
+      for (let i = 0; i < 10; i++) {
+        const dot = document.createElement("span");
+        dot.className = "dot" + (i < state.mathStreak ? " filled" : (i === state.mathStreak ? " current" : ""));
+        box.appendChild(dot);
+      }
+    }
+
+    function nextMathQuestion() {
+      // 贴合北京三年级：两位数进退位加减、两位数乘一位数、表内除加/乘减两步混合
+      const mode = Math.floor(Math.random() * 5);
+      let a, b, c, expr, ans, tag;
+      if (mode === 0) {
+        a = Math.floor(Math.random() * 65) + 24;
+        b = Math.floor(Math.random() * 65) + 18;
+        expr = `${a} + ${b}`;
+        ans = a + b;
+        tag = "进位加法";
+      } else if (mode === 1) {
+        a = Math.floor(Math.random() * 55) + 42;
+        b = Math.floor(Math.random() * (a - 18)) + 14;
+        expr = `${a} − ${b}`;
+        ans = a - b;
+        tag = "退位减法";
+      } else if (mode === 2) {
+        a = Math.floor(Math.random() * 24) + 12;
+        b = Math.floor(Math.random() * 7) + 2;
+        expr = `${a} × ${b}`;
+        ans = a * b;
+        tag = "两位数乘一位数";
+      } else if (mode === 3) {
+        a = Math.floor(Math.random() * 7) + 3;
+        b = Math.floor(Math.random() * 7) + 3;
+        c = Math.floor(Math.random() * 25) + 8;
+        expr = `${a} × ${b} + ${c}`;
+        ans = a * b + c;
+        tag = "乘加混合";
+      } else {
+        b = Math.floor(Math.random() * 7) + 2;
+        const q = Math.floor(Math.random() * 8) + 2;
+        a = b * q;
+        c = Math.floor(Math.random() * 30) + 12;
+        expr = `${a} ÷ ${b} + ${c}`;
+        ans = q + c;
+        tag = "除加混合";
+      }
+      state.mathTarget = ans;
+      state.mathOpText = expr;
+      state.mathLastType = tag;
+      $("mathTagLabel").textContent = `第一关 · 连续答对 10 题（当前 ${state.mathStreak}/10）`;
+      $("mathExpr").textContent = `${expr} =`;
+      $("mathInput").value = "";
+      $("mathInput").focus();
+      renderMathDots();
+      updateNav();
+    }
+
+    function submitMath() {
+      const raw = $("mathInput").value.replace(/[^\d-]/g, "").trim();
+      if (raw === "") return;
+      const num = parseInt(raw, 10);
+      const fb = $("mathFeedback");
+      if (num === state.mathTarget) {
+        state.mathStreak++;
+        playTone("ok");
+        fb.className = "feedback show ok";
+        fb.textContent = `正确 · 连对 ${state.mathStreak} / 10`;
+        if (state.mathStreak >= 10) {
+          playTone("win");
+          setTimeout(() => {
+            state.stage = 2;
+            initStage2();
+          }, 420);
+        } else {
+          nextMathQuestion();
+        }
+      } else {
+        state.mathResets++;
+        state.mathStreak = 0;
+        playTone("err");
+        const arena = $("mathArena");
+        arena.classList.remove("shake");
+        void arena.offsetWidth;
+        arena.classList.add("shake");
+        fb.className = "feedback show err";
+        fb.textContent = `${state.mathOpText} = ${state.mathTarget} · 连击已归零，深呼吸再来一组`;
+        nextMathQuestion();
+      }
+    }
+
+    // ---------- 第二关：厚海原版朗读与理解 ----------
+    function initStage2() {
+      const lesson = getCurrentLesson();
+      $("readingTitle").textContent = `第二关 · ${lesson.unit}`;
+      const words = lesson.passage.trim().split(/\s+/).length;
+      $("readingWordCount").textContent = `${words} 词`;
+      $("readingPassage").textContent = lesson.passage;
+      $("readingQuizBlock").classList.add("hidden");
+      $("readingFeedback").className = "feedback";
+      $("recTranscript").textContent = "朗读时的语音识别会同步显示在这里";
+      $("recTimer").textContent = "准备就绪";
+      state.transcript = "";
+      state.quizAnswers = {};
+      updateNav();
+    }
+
+    function toggleRecording() {
+      const btn = $("recToggleBtn");
+      const wave = $("waveBars");
+      const fb = $("readingFeedback");
+      if (!state.isRecording) {
+        state.isRecording = true;
+        state.readingAttempts++;
+        state.recSeconds = 0;
+        state.transcript = "";
+        fb.className = "feedback";
+        btn.classList.add("recording");
+        btn.textContent = "读完了，点击结束";
+        wave.classList.add("active");
+        $("recTimer").textContent = "00:00";
+        $("recTranscript").textContent = "正在聆听，请清晰朗读上方课文...";
+
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRec) {
+          try {
+            const rec = new SpeechRec();
+            rec.lang = "en-US";
+            rec.continuous = true;
+            rec.interimResults = true;
+            rec.onresult = e => {
+              let txt = "";
+              for (let i = 0; i < e.results.length; i++) {
+                txt += e.results[i][0].transcript + " ";
+              }
+              state.transcript = txt.trim();
+              $("recTranscript").textContent = state.transcript || "正在聆听...";
+            };
+            rec.onerror = () => {};
+            rec.start();
+            state.recognition = rec;
+          } catch (err) {
+            state.recognition = null;
+          }
+        }
+        clearInterval(state.recTimerId);
+        state.recTimerId = setInterval(() => {
+          state.recSeconds++;
+          const mm = String(Math.floor(state.recSeconds / 60)).padStart(2, "0");
+          const ss = String(state.recSeconds % 60).padStart(2, "0");
+          $("recTimer").textContent = `${mm}:${ss}`;
+        }, 1000);
+      } else {
+        state.isRecording = false;
+        clearInterval(state.recTimerId);
+        wave.classList.remove("active");
+        if (state.recognition) {
+          try { state.recognition.stop(); } catch (e) {}
+        }
+        btn.classList.remove("recording");
+        btn.textContent = "🎤 点击开始朗读";
+        evaluateReading();
+      }
+    }
+
+    function evaluateReading() {
+      const lesson = getCurrentLesson();
+      const targetWords = lesson.passage.toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/).filter(w => w.length > 2);
+      const uniqueTargets = Array.from(new Set(targetWords));
+      const spoken = state.transcript.toLowerCase();
+      const fb = $("readingFeedback");
+
+      if (state.transcript.length > 10) {
+        let hit = 0;
+        uniqueTargets.forEach(w => { if (spoken.includes(w)) hit++; });
+        const ratio = Math.round((hit / Math.max(uniqueTargets.length, 1)) * 100);
+        if (ratio >= 45 || state.recSeconds >= 18) {
+          playTone("ok");
+          fb.className = "feedback show ok";
+          fb.textContent = `朗读完成（用时 ${state.recSeconds} 秒，词汇识别率 ${ratio}%），请回答下方 2 道理解题`;
+          unlockQuiz();
+        } else {
+          playTone("err");
+          fb.className = "feedback show err";
+          fb.textContent = `识别到的句子还不够完整（${ratio}%），请再点按钮完整朗读一遍整段课文`;
+        }
+      } else {
+        if (state.recSeconds >= 15) {
+          playTone("ok");
+          fb.className = "feedback show ok";
+          fb.textContent = `朗读完成（用时 ${state.recSeconds} 秒），请回答下方 2 道理解题`;
+          unlockQuiz();
+        } else {
+          playTone("err");
+          fb.className = "feedback show err";
+          fb.textContent = `朗读仅用时 ${state.recSeconds} 秒，整段大约需 20 秒以上，请完整读完再点结束`;
+        }
+      }
+    }
+
+    function unlockQuiz() {
+      const lesson = getCurrentLesson();
+      const container = $("quizContainer");
+      container.innerHTML = "";
+      const letters = ["A", "B", "C", "D"];
+      lesson.quiz.forEach((item, qIdx) => {
+        const div = document.createElement("div");
+        div.className = "quiz-card";
+        const qEl = document.createElement("div");
+        qEl.className = "quiz-q";
+        qEl.textContent = item.q;
+        div.appendChild(qEl);
+
+        const grid = document.createElement("div");
+        grid.className = "options-grid";
+        item.opts.forEach((opt, oIdx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "opt-btn";
+          btn.textContent = `${letters[oIdx]}. ${opt}`;
+          btn.addEventListener("click", () => {
+            state.quizAnswers[qIdx] = oIdx;
+            Array.from(grid.children).forEach((b, idx) => b.classList.toggle("selected", idx === oIdx));
+          });
+          grid.appendChild(btn);
+        });
+        div.appendChild(grid);
+        container.appendChild(div);
+      });
+      $("readingQuizBlock").classList.remove("hidden");
+    }
+
+    function submitQuiz() {
+      const lesson = getCurrentLesson();
+      const fb = $("quizFeedback");
+      let allCorrect = true;
+      for (let i = 0; i < lesson.quiz.length; i++) {
+        if (state.quizAnswers[i] !== lesson.quiz[i].ans) allCorrect = false;
+      }
+      if (allCorrect) {
+        playTone("win");
+        fb.className = "feedback show ok";
+        fb.textContent = "两题全对，进入最后一关：闭卷拼词";
+        setTimeout(() => {
+          state.stage = 3;
+          initStage3();
+        }, 550);
+      } else {
+        playTone("err");
+        fb.className = "feedback show err";
+        fb.textContent = "还有选项不太准确，回看上方原文核对一下吧";
+      }
+    }
+
+    // ---------- 第三关：三步防偷看闭卷背单词 ----------
+    function initStage3() {
+      const lesson = getCurrentLesson();
+      const offsets = [1, 3, 7, 14, 30];
+      const reviewWords = [];
+      const seen = new Set(lesson.words.map(w => w.word.toLowerCase()));
+      // 优先加入家长设置的易错加练词
+      state.weakWords.forEach(target => {
+        const key = target.trim().toLowerCase();
+        if (!key || seen.has(key)) return;
+        for (const c of CURRICULUM) {
+          const found = c.words.find(w => w.word.toLowerCase() === key);
+          if (found) {
+            reviewWords.push({ ...found, isReview: true });
+            seen.add(key);
+            break;
+          }
+        }
+      });
+      offsets.forEach(off => {
+        const prev = CURRICULUM.find(c => c.day === lesson.day - off);
+        if (prev) {
+          prev.words.forEach(w => {
+            const k = w.word.toLowerCase();
+            if (!seen.has(k)) {
+              reviewWords.push({ ...w, isReview: true });
+              seen.add(k);
+            }
+          });
+        }
+      });
+      state.vocabQueue = [
+        ...reviewWords,
+        ...lesson.words.map(w => ({ ...w, isReview: false }))
+      ];
+      state.vocabIdx = 0;
+      state.vocabSubStep = 0;
+      state.vocabErrors = {};
+      renderVocabStep();
+    }
+
+    function speakText(text) {
+      if ("speechSynthesis" in window) {
+        try {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = "en-US";
+          u.rate = 0.88;
+          window.speechSynthesis.speak(u);
+        } catch (e) {}
+      }
+    }
+
+    function buildSubstepBar(activeIdx) {
+      const wrap = document.createElement("div");
+      wrap.style.textAlign = "center";
+      const bar = document.createElement("div");
+      bar.className = "substep-pills";
+      ["1 课文原句", "2 选出词义", "3 闭卷拼写"].forEach((txt, idx) => {
+        const s = document.createElement("span");
+        s.className = "substep-pill" + (idx === activeIdx ? " on" : "");
+        s.textContent = txt;
+        bar.appendChild(s);
+      });
+      wrap.appendChild(bar);
+      return wrap;
+    }
+
+    function renderVocabStep() {
+      updateNav();
+      const item = state.vocabQueue[state.vocabIdx];
+      $("vocabProgressPill").textContent = `${item.isReview ? "旧词复习" : "今日新词"} · ${state.vocabIdx + 1} / ${state.vocabQueue.length}`;
+      $("vocabFeedback").className = "feedback";
+      const body = $("vocabBody");
+      body.innerHTML = "";
+      body.appendChild(buildSubstepBar(state.vocabSubStep));
+
+      if (state.vocabSubStep === 0) {
+        const card = document.createElement("div");
+        card.className = "sentence-focus";
+        const reg = new RegExp(`(${item.word}[a-z]*)`, "i");
+        card.innerHTML = item.ctx.replace(reg, "<mark>$1</mark>");
+
+        const actions = document.createElement("div");
+        actions.style.cssText = "display:flex; gap:12px; justify-content:center; flex-wrap:wrap;";
+        const listenBtn = document.createElement("button");
+        listenBtn.type = "button";
+        listenBtn.className = "btn btn-soft";
+        listenBtn.textContent = "🔊 听原句读音";
+        listenBtn.addEventListener("click", () => speakText(item.ctx));
+
+        const nextBtn = document.createElement("button");
+        nextBtn.type = "button";
+        nextBtn.className = "btn btn-primary";
+        nextBtn.textContent = "记住了，去选词义";
+        nextBtn.addEventListener("click", () => {
+          state.vocabSubStep = 1;
+          renderVocabStep();
+        });
+        actions.append(listenBtn, nextBtn);
+        body.append(card, actions);
+      } else if (state.vocabSubStep === 1) {
+        const card = document.createElement("div");
+        card.className = "sentence-focus";
+        card.innerHTML = `<div style="font-size:14px; font-family:-apple-system,sans-serif; color:var(--ink-secondary); margin-bottom:8px;">句中空缺的词（${item.pos}）是什么意思？</div>${item.blank}`;
+
+        const opts = [item.cn, ...item.distractors].sort(() => Math.random() - 0.5);
+        const grid = document.createElement("div");
+        grid.className = "options-grid";
+        opts.forEach(opt => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "opt-btn";
+          btn.style.textAlign = "center";
+          btn.textContent = opt;
+          btn.addEventListener("click", () => {
+            const fb = $("vocabFeedback");
+            if (opt === item.cn) {
+              playTone("ok");
+              btn.classList.add("selected");
+              fb.className = "feedback show ok";
+              fb.textContent = "词义正确，进入无提示闭卷拼写";
+              setTimeout(() => {
+                state.vocabSubStep = 2;
+                renderVocabStep();
+              }, 480);
+            } else {
+              playTone("err");
+              fb.className = "feedback show err";
+              fb.textContent = "意思不对哦，结合刚才那句课文再想一想";
+            }
+          });
+          grid.appendChild(btn);
+        });
+        body.append(card, grid);
+      } else {
+        // 第3步：单屏完全遮蔽原词 + 实时字母格跳动
+        const arena = document.createElement("div");
+        arena.className = "spell-arena";
+
+        const cnEl = document.createElement("div");
+        cnEl.className = "spell-cn";
+        cnEl.textContent = item.cn;
+
+        const posEl = document.createElement("div");
+        posEl.className = "spell-pos";
+        posEl.textContent = `${item.pos} · 共 ${item.word.length} 个字符`;
+
+        const clozeEl = document.createElement("div");
+        clozeEl.className = "spell-cloze";
+        clozeEl.textContent = item.blank;
+
+        const tileRow = document.createElement("div");
+        tileRow.className = "tile-row";
+        const tileEls = [];
+        for (let i = 0; i < item.word.length; i++) {
+          const t = document.createElement("div");
+          if (item.word[i] === " ") {
+            t.className = "letter-tile space-tile";
+          } else {
+            t.className = "letter-tile";
+          }
+          tileRow.appendChild(t);
+          tileEls.push(t);
+        }
+
+        const inp = document.createElement("input");
+        inp.type = "text";
+        inp.className = "word-input-clean";
+        inp.maxLength = item.word.length + 2;
+        inp.placeholder = "键盘输入每个字母";
+        inp.setAttribute("autocomplete", "off");
+        inp.setAttribute("autocorrect", "off");
+        inp.setAttribute("autocapitalize", "off");
+        inp.setAttribute("spellcheck", "false");
+
+        const syncTiles = () => {
+          const val = inp.value;
+          tileEls.forEach((el, idx) => {
+            if (item.word[idx] === " ") return;
+            const ch = val[idx] || "";
+            el.textContent = ch;
+            el.classList.toggle("filled", Boolean(ch));
+          });
+        };
+        inp.addEventListener("input", syncTiles);
+
+        const btnRow = document.createElement("div");
+        btnRow.style.cssText = "margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;";
+        const listenBtn = document.createElement("button");
+        listenBtn.type = "button";
+        listenBtn.className = "btn btn-soft";
+        listenBtn.textContent = "🔊 听单词发音";
+        listenBtn.addEventListener("click", () => speakText(item.word));
+
+        const checkBtn = document.createElement("button");
+        checkBtn.type = "button";
+        checkBtn.className = "btn btn-primary";
+        checkBtn.textContent = "确认拼写";
+
+        const handleCheck = () => {
+          const val = inp.value.trim().toLowerCase();
+          if (!val) return;
+          const fb = $("vocabFeedback");
+          if (val === item.word.toLowerCase()) {
+            playTone("ok");
+            fb.className = "feedback show ok";
+            fb.textContent = `拼写全对：${item.word}`;
+            setTimeout(() => {
+              if (state.vocabIdx + 1 < state.vocabQueue.length) {
+                state.vocabIdx++;
+                state.vocabSubStep = 0;
+                renderVocabStep();
+              } else {
+                playTone("win");
+                state.stage = 4;
+                renderFinalReport();
+              }
+            }, 550);
+          } else {
+            playTone("err");
+            state.vocabErrors[item.word] = (state.vocabErrors[item.word] || 0) + 1;
+            fb.className = "feedback show err";
+            fb.textContent = `差一点点，正确拼写是 ${item.word}，默记 2 秒后重新盲拼`;
+            inp.value = "";
+            syncTiles();
+            inp.disabled = true;
+            checkBtn.disabled = true;
+            setTimeout(() => {
+              fb.className = "feedback show info";
+              fb.textContent = "已隐藏提示，请重新独立拼出完整单词";
+              inp.disabled = false;
+              checkBtn.disabled = false;
+              inp.focus();
+            }, 2400);
+          }
+        };
+
+        checkBtn.addEventListener("click", handleCheck);
+        inp.addEventListener("keydown", e => { if (e.key === "Enter") handleCheck(); });
+
+        btnRow.append(listenBtn, checkBtn);
+        arena.append(cnEl, posEl, clozeEl, tileRow, inp, btnRow);
+        body.appendChild(arena);
+        setTimeout(() => inp.focus(), 60);
+      }
+    }
+
+    // ---------- 第四屏：家长核验单 ----------
+    function renderFinalReport() {
+      updateNav();
+      const lesson = getCurrentLesson();
+      try {
+        if (!state.completedDays.includes(lesson.day)) {
+          state.completedDays.push(lesson.day);
+          localStorage.setItem("ww3_done_days", JSON.stringify(state.completedDays));
+        }
+        localStorage.setItem("ww3_last_pass_date", todayKey());
+        localStorage.setItem("ww3_last_pass_day", String(lesson.day));
+      } catch (e) {}
+      const newWords = lesson.words.map(w => w.word).join("、");
+      const errWords = Object.keys(state.vocabErrors);
+      const errText = errWords.length ? errWords.map(w => `${w}（重拼 ${state.vocabErrors[w]} 次）`).join("、") : "全部一次盲拼全对";
+
+      $("finalReportBox").innerHTML = `
+        <div class="report-row"><span class="report-key">完成日期与课次</span><span class="report-val">${$("todayDatePill").textContent} · Day ${String(lesson.day).padStart(2, "0")} (${lesson.unit})</span></div>
+        <div class="report-row"><span class="report-key">三年级口算 10 连对</span><span class="report-val">已通过（中途归零 ${state.mathResets} 次）</span></div>
+        <div class="report-row"><span class="report-key">厚海原版朗读与理解</span><span class="report-val">已通过（朗读 ${state.readingAttempts} 次 · 2 题全对）</span></div>
+        <div class="report-row"><span class="report-key">今日掌握核心词</span><span class="report-val">${newWords}</span></div>
+        <div class="report-row"><span class="report-key">盲拼准确度记录</span><span class="report-val">${errText}</span></div>
+      `;
+    }
+
+    // ---------- 家长设置与声音开关 ----------
+    function populateDaySelect() {
+      const sel = $("daySelect");
+      sel.innerHTML = "";
+      CURRICULUM.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.day;
+        const doneMark = state.completedDays.includes(c.day) ? "✓ " : "";
+        opt.textContent = `${doneMark}Day ${String(c.day).padStart(2, "0")} · ${c.unit}`;
+        if (c.day === state.currentDay) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      $("weakWordsInput").value = state.weakWords.join(", ");
+    }
+
+    $("soundToggleBtn").addEventListener("click", () => {
+      state.soundOn = !state.soundOn;
+      $("soundOnIcon").classList.toggle("hidden", !state.soundOn);
+      $("soundOffIcon").classList.toggle("hidden", state.soundOn);
+    });
+
+    $("openParentBtn").addEventListener("click", () => {
+      $("parentLockView").classList.remove("hidden");
+      $("parentSettingsView").classList.add("hidden");
+      $("parentPinInput").value = "";
+      $("pinFeedback").className = "feedback";
+      $("parentModal").classList.add("open");
+    });
+    $("closeParentBtn1").addEventListener("click", () => $("parentModal").classList.remove("open"));
+    $("closeParentBtn2").addEventListener("click", () => $("parentModal").classList.remove("open"));
+    $("unlockParentBtn").addEventListener("click", () => {
+      if ($("parentPinInput").value.trim() === state.parentPin) {
+        populateDaySelect();
+        $("parentLockView").classList.add("hidden");
+        $("parentSettingsView").classList.remove("hidden");
+      } else {
+        $("pinFeedback").className = "feedback show err";
+        $("pinFeedback").textContent = "密码不正确（默认 0000）";
+      }
+    });
+    $("saveParentBtn").addEventListener("click", () => {
+      const chosenDay = parseInt($("daySelect").value, 10);
+      const newPin = $("newPinInput").value.trim();
+      const rawWeak = $("weakWordsInput").value.split(/[,，\s]+/).map(s => s.trim()).filter(Boolean);
+      state.currentDay = chosenDay;
+      state.weakWords = rawWeak;
+      try {
+        localStorage.setItem("ww3_day", String(chosenDay));
+        localStorage.setItem("ww3_weak_words", JSON.stringify(rawWeak));
+      } catch (e) {}
+      if (/^\d{4}$/.test(newPin)) {
+        state.parentPin = newPin;
+        try { localStorage.setItem("ww3_pin", newPin); } catch (e) {}
+      }
+      $("parentModal").classList.remove("open");
+      resetAll();
+    });
+
+    function resetAll() {
+      state.stage = 1;
+      state.mathStreak = 0;
+      state.mathResets = 0;
+      state.readingAttempts = 0;
+      $("mathFeedback").className = "feedback";
+      updateHeader();
+      nextMathQuestion();
+    }
+
+    $("mathSubmitBtn").addEventListener("click", submitMath);
+    $("mathInput").addEventListener("keydown", e => { if (e.key === "Enter") submitMath(); });
+    $("recToggleBtn").addEventListener("click", toggleRecording);
+    $("quizSubmitBtn").addEventListener("click", submitQuiz);
+    $("restartTodayBtn").addEventListener("click", resetAll);
+
+    updateHeader();
+    nextMathQuestion();
+  </script>
+</body>
+</html>
