@@ -824,6 +824,7 @@
           <span></span><span></span><span></span><span></span>
         </div>
         <div class="rec-meta" id="recTimer">准备就绪</div>
+        <button class="btn btn-soft hidden" id="recFallbackBtn" type="button" style="font-size:13px; padding:8px 16px;">点击直接完成朗读，进入理解题</button>
         <div class="transcript-line" id="recTranscript">朗读时的语音识别会同步显示在这里</div>
       </div>
       <div class="feedback" id="readingFeedback"></div>
@@ -3611,7 +3612,33 @@
       updateNav();
     }
 
-    function toggleRecording() {
+    let lastRecTapAt = 0;
+    function finishRecordingNow() {
+      if (!state.isRecording) return;
+      const btn = $("recToggleBtn");
+      const wave = $("waveBars");
+      state.isRecording = false;
+      clearInterval(state.recTimerId);
+      wave.classList.remove("active");
+      $("recFallbackBtn").classList.add("hidden");
+      btn.classList.remove("recording");
+      btn.textContent = "🎤 点击开始朗读";
+      const recRef = state.recognition;
+      state.recognition = null;
+      if (recRef) {
+        setTimeout(() => {
+          try { recRef.abort ? recRef.abort() : recRef.stop(); } catch (e) {}
+        }, 0);
+      }
+      evaluateReading();
+    }
+
+    function toggleRecording(e) {
+      if (e && e.type === "touchend") e.preventDefault();
+      const now = Date.now();
+      if (now - lastRecTapAt < 350) return;
+      lastRecTapAt = now;
+
       const btn = $("recToggleBtn");
       const wave = $("waveBars");
       const fb = $("readingFeedback");
@@ -3621,23 +3648,24 @@
         state.recSeconds = 0;
         state.transcript = "";
         fb.className = "feedback";
+        $("recFallbackBtn").classList.add("hidden");
         btn.classList.add("recording");
         btn.textContent = "读完了，点击结束";
         wave.classList.add("active");
         $("recTimer").textContent = "00:00";
-        $("recTranscript").textContent = "正在聆听，请清晰朗读上方课文...";
+        $("recTranscript").textContent = "正在计时朗读，读完点上方红色按钮结束";
 
         const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRec) {
           try {
             const rec = new SpeechRec();
             rec.lang = "en-US";
-            rec.continuous = true;
+            rec.continuous = false;
             rec.interimResults = true;
-            rec.onresult = e => {
+            rec.onresult = ev => {
               let txt = "";
-              for (let i = 0; i < e.results.length; i++) {
-                txt += e.results[i][0].transcript + " ";
+              for (let i = 0; i < ev.results.length; i++) {
+                txt += ev.results[i][0].transcript + " ";
               }
               state.transcript = txt.trim();
               $("recTranscript").textContent = state.transcript || "正在聆听...";
@@ -3655,17 +3683,12 @@
           const mm = String(Math.floor(state.recSeconds / 60)).padStart(2, "0");
           const ss = String(state.recSeconds % 60).padStart(2, "0");
           $("recTimer").textContent = `${mm}:${ss}`;
+          if (state.recSeconds >= 15) {
+            $("recFallbackBtn").classList.remove("hidden");
+          }
         }, 1000);
       } else {
-        state.isRecording = false;
-        clearInterval(state.recTimerId);
-        wave.classList.remove("active");
-        if (state.recognition) {
-          try { state.recognition.stop(); } catch (e) {}
-        }
-        btn.classList.remove("recording");
-        btn.textContent = "🎤 点击开始朗读";
-        evaluateReading();
+        finishRecordingNow();
       }
     }
 
@@ -4102,6 +4125,9 @@
     $("mathSubmitBtn").addEventListener("click", submitMath);
     $("mathInput").addEventListener("keydown", e => { if (e.key === "Enter") submitMath(); });
     $("recToggleBtn").addEventListener("click", toggleRecording);
+    $("recToggleBtn").addEventListener("touchend", toggleRecording, { passive: false });
+    $("recFallbackBtn").addEventListener("click", finishRecordingNow);
+    $("recFallbackBtn").addEventListener("touchend", e => { e.preventDefault(); finishRecordingNow(); }, { passive: false });
     $("quizSubmitBtn").addEventListener("click", submitQuiz);
     $("restartTodayBtn").addEventListener("click", resetAll);
 
