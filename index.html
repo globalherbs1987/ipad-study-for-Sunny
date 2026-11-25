@@ -859,7 +859,9 @@
         </p>
       </div>
       <div class="report-sheet" id="finalReportBox"></div>
-      <div style="margin-top:24px; text-align:center;">
+      <div class="feedback" id="syncFeedback"></div>
+      <div style="margin-top:22px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <button class="btn btn-soft" id="copyReportBtn" type="button">复制今日学情战报</button>
         <button class="btn btn-soft" id="restartTodayBtn" type="button">再练一遍今日关卡</button>
       </div>
     </section>
@@ -891,6 +893,14 @@
         <div class="form-row">
           <label for="weakWordsInput">易错加练词（逗号分隔英文，次日优先加考）</label>
           <input id="weakWordsInput" type="text" placeholder="例如 typewriter, sculpture" autocomplete="off" />
+        </div>
+        <div class="form-row">
+          <label for="webhookInput">自动回传通道（已内置免配置直连你的 Gmail 与 Gemini）</label>
+          <div style="display:flex; gap:8px;">
+            <input id="webhookInput" type="url" placeholder="默认免填自动直连 globalherbs1987@gmail.com" autocomplete="off" />
+            <button class="btn btn-soft" id="testSyncBtn" type="button" style="white-space:nowrap; padding:8px 14px; font-size:13px;">发送激活测试</button>
+          </div>
+          <div class="feedback" id="testSyncFeedback" style="margin-top:8px;"></div>
         </div>
         <div class="form-row">
           <label for="newPinInput">修改 4 位家长密码（不改请留空）</label>
@@ -3407,6 +3417,7 @@
       stage: 1,
       mathStreak: 0,
       mathResets: 0,
+      mathWrongList: [],
       mathTarget: 0,
       mathOpText: "",
       mathLastType: "",
@@ -3416,7 +3427,11 @@
       recognition: null,
       transcript: "",
       readingAttempts: 0,
+      readingSeconds: 0,
+      quizWrongCount: 0,
       quizAnswers: {},
+      webhookUrl: "",
+      lastReportText: "",
       vocabQueue: [],
       vocabIdx: 0,
       vocabSubStep: 0,
@@ -3438,6 +3453,8 @@
       if (Array.isArray(savedDone)) state.completedDays = savedDone;
       const savedWeak = JSON.parse(localStorage.getItem("ww3_weak_words") || "[]");
       if (Array.isArray(savedWeak)) state.weakWords = savedWeak;
+      const savedHook = localStorage.getItem("ww3_webhook") || "";
+      if (savedHook.startsWith("https://")) state.webhookUrl = savedHook;
       const lastPassDate = localStorage.getItem("ww3_last_pass_date");
       const lastPassDay = parseInt(localStorage.getItem("ww3_last_pass_day"), 10);
       // 跨天后自动推进到下一关
@@ -3584,6 +3601,7 @@
         }
       } else {
         state.mathResets++;
+        state.mathWrongList.push(`${state.mathOpText}=${num}(应为${state.mathTarget})`);
         state.mathStreak = 0;
         playTone("err");
         const arena = $("mathArena");
@@ -3704,6 +3722,7 @@
         uniqueTargets.forEach(w => { if (spoken.includes(w)) hit++; });
         const ratio = Math.round((hit / Math.max(uniqueTargets.length, 1)) * 100);
         if (ratio >= 45 || state.recSeconds >= 18) {
+          state.readingSeconds = state.recSeconds;
           playTone("ok");
           fb.className = "feedback show ok";
           fb.textContent = `朗读完成（用时 ${state.recSeconds} 秒，词汇识别率 ${ratio}%），请回答下方 2 道理解题`;
@@ -3715,6 +3734,7 @@
         }
       } else {
         if (state.recSeconds >= 15) {
+          state.readingSeconds = state.recSeconds;
           playTone("ok");
           fb.className = "feedback show ok";
           fb.textContent = `朗读完成（用时 ${state.recSeconds} 秒），请回答下方 2 道理解题`;
@@ -3775,6 +3795,7 @@
           initStage3();
         }, 550);
       } else {
+        state.quizWrongCount++;
         playTone("err");
         fb.className = "feedback show err";
         fb.textContent = "还有选项不太准确，回看上方原文核对一下吧";
@@ -4030,6 +4051,81 @@
     }
 
     // ---------- 第四屏：家长核验单 ----------
+    const DEFAULT_FORMSUBMIT_URL = "https://formsubmit.co/ajax/globalherbs1987@gmail.com";
+    function sendReportAuto(payload, fbEl) {
+      if (fbEl) {
+        fbEl.className = "feedback show info";
+        fbEl.textContent = "正在自动回传今日学情数据给 Gemini...";
+      }
+      if (state.webhookUrl && state.webhookUrl.startsWith("https://")) {
+        try {
+          fetch(state.webhookUrl, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+          }).then(() => {
+            if (fbEl) {
+              fbEl.className = "feedback show ok";
+              fbEl.textContent = "✓ 今日学情数据已自动回传";
+            }
+          }).catch(() => {
+            if (fbEl) {
+              fbEl.className = "feedback show err";
+              fbEl.textContent = "自动回传未发出（请检查网络），可点下方复制战报";
+            }
+          });
+        } catch (e) {}
+        return;
+      }
+      try {
+        fetch(DEFAULT_FORMSUBMIT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            _subject: `Sunny每日闯关学情战报 - ${payload.date} ${payload.day}`,
+            _template: "table",
+            _captcha: "false",
+            "日期": payload.date,
+            "关卡(Day)": payload.day,
+            "单元课次": payload.unit,
+            "口算重置次数": payload.mathResets,
+            "口算错题明细": payload.mathWrong,
+            "朗读用时(秒)": payload.readingSeconds,
+            "朗读尝试次数": payload.readingAttempts,
+            "朗读识别文本": payload.transcript,
+            "理解题错题数": payload.quizWrongCount,
+            "新学单词": payload.newWords,
+            "易错拼写词": payload.vocabErrors,
+            "提交时间": payload.submittedAt
+          })
+        }).then(r => r.json()).then(res => {
+          if (fbEl) {
+            if (res && (res.success === "true" || res.success === true)) {
+              fbEl.className = "feedback show ok";
+              fbEl.textContent = "✓ 今日学情已自动发回 Gemini（自动入表并生成分析）";
+            } else {
+              fbEl.className = "feedback show info";
+              fbEl.textContent = "首次启用：请去你的 Gmail 点一下 FormSubmit 发来的绿色 Activate Form 激活按钮，之后每天全自动回传";
+            }
+          }
+        }).catch(() => {
+          if (fbEl) {
+            fbEl.className = "feedback show err";
+            fbEl.textContent = "回传被拦截（请确认家长手机网页白名单已添加 formsubmit.co）";
+          }
+        });
+      } catch (err) {
+        if (fbEl) {
+          fbEl.className = "feedback show err";
+          fbEl.textContent = "回传异常，可点下方复制战报";
+        }
+      }
+    }
+
     function renderFinalReport() {
       updateNav();
       const lesson = getCurrentLesson();
@@ -4048,10 +4144,34 @@
       $("finalReportBox").innerHTML = `
         <div class="report-row"><span class="report-key">完成日期与课次</span><span class="report-val">${$("todayDatePill").textContent} · Day ${String(lesson.day).padStart(2, "0")} (${lesson.unit})</span></div>
         <div class="report-row"><span class="report-key">三年级口算 10 连对</span><span class="report-val">已通过（中途归零 ${state.mathResets} 次）</span></div>
-        <div class="report-row"><span class="report-key">厚海原版朗读与理解</span><span class="report-val">已通过（朗读 ${state.readingAttempts} 次 · 2 题全对）</span></div>
+        <div class="report-row"><span class="report-key">厚海原版朗读与理解</span><span class="report-val">已通过（用时 ${state.readingSeconds} 秒 · 理解错 ${state.quizWrongCount} 次）</span></div>
         <div class="report-row"><span class="report-key">今日掌握核心词</span><span class="report-val">${newWords}</span></div>
         <div class="report-row"><span class="report-key">盲拼准确度记录</span><span class="report-val">${errText}</span></div>
       `;
+
+      const payload = {
+        date: todayKey(),
+        day: `Day ${String(lesson.day).padStart(2, "0")}`,
+        unit: lesson.unit,
+        mathResets: state.mathResets,
+        mathWrong: state.mathWrongList.join("；") || "无",
+        readingSeconds: state.readingSeconds,
+        readingAttempts: state.readingAttempts,
+        transcript: state.transcript || "（计时朗读模式）",
+        quizWrongCount: state.quizWrongCount,
+        newWords: newWords,
+        vocabErrors: errText,
+        submittedAt: new Date().toLocaleString("zh-CN")
+      };
+      state.lastReportText = [
+        `【每日闯关学情战报】${payload.date} | ${payload.day} ${payload.unit}`,
+        `- 口算10连对：重置 ${payload.mathResets} 次（错题：${payload.mathWrong}）`,
+        `- 课文朗读：用时 ${payload.readingSeconds} 秒，尝试 ${payload.readingAttempts} 次，理解题错 ${payload.quizWrongCount} 次`,
+        `- 新学单词：${payload.newWords}`,
+        `- 盲拼记录：${payload.vocabErrors}`
+      ].join("\n");
+
+      sendReportAuto(payload, $("syncFeedback"));
     }
 
     // ---------- 家长设置与声音开关 ----------
@@ -4067,6 +4187,7 @@
         sel.appendChild(opt);
       });
       $("weakWordsInput").value = state.weakWords.join(", ");
+      $("webhookInput").value = state.webhookUrl;
     }
 
     $("soundToggleBtn").addEventListener("click", () => {
@@ -4094,15 +4215,37 @@
         $("pinFeedback").textContent = "密码不正确（默认 0000）";
       }
     });
+    $("testSyncBtn").addEventListener("click", () => {
+      const lesson = getCurrentLesson();
+      sendReportAuto({
+        date: todayKey(),
+        day: `Day ${String(lesson.day).padStart(2, "0")}（通道激活测试）`,
+        unit: lesson.unit,
+        mathResets: 0,
+        mathWrong: "测试数据（无需入表）",
+        readingSeconds: 25,
+        readingAttempts: 1,
+        transcript: "Activation test from iPad study app",
+        quizWrongCount: 0,
+        newWords: lesson.words.map(w => w.word).join("、"),
+        vocabErrors: "无",
+        submittedAt: new Date().toLocaleString("zh-CN")
+      }, $("testSyncFeedback"));
+    });
     $("saveParentBtn").addEventListener("click", () => {
       const chosenDay = parseInt($("daySelect").value, 10);
       const newPin = $("newPinInput").value.trim();
       const rawWeak = $("weakWordsInput").value.split(/[,，\s]+/).map(s => s.trim()).filter(Boolean);
+      const hookVal = $("webhookInput").value.trim();
       state.currentDay = chosenDay;
       state.weakWords = rawWeak;
+      if (hookVal.startsWith("https://") || hookVal === "") {
+        state.webhookUrl = hookVal;
+      }
       try {
         localStorage.setItem("ww3_day", String(chosenDay));
         localStorage.setItem("ww3_weak_words", JSON.stringify(rawWeak));
+        localStorage.setItem("ww3_webhook", state.webhookUrl);
       } catch (e) {}
       if (/^\d{4}$/.test(newPin)) {
         state.parentPin = newPin;
@@ -4116,7 +4259,10 @@
       state.stage = 1;
       state.mathStreak = 0;
       state.mathResets = 0;
+      state.mathWrongList = [];
       state.readingAttempts = 0;
+      state.readingSeconds = 0;
+      state.quizWrongCount = 0;
       $("mathFeedback").className = "feedback";
       updateHeader();
       nextMathQuestion();
@@ -4129,6 +4275,24 @@
     $("recFallbackBtn").addEventListener("click", finishRecordingNow);
     $("recFallbackBtn").addEventListener("touchend", e => { e.preventDefault(); finishRecordingNow(); }, { passive: false });
     $("quizSubmitBtn").addEventListener("click", submitQuiz);
+    $("copyReportBtn").addEventListener("click", () => {
+      const text = state.lastReportText || "";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          $("syncFeedback").className = "feedback show ok";
+          $("syncFeedback").textContent = "已复制今日学情战报，可直接粘贴发给 Gemini 分析";
+        }).catch(() => {});
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(ta);
+        $("syncFeedback").className = "feedback show ok";
+        $("syncFeedback").textContent = "已复制今日学情战报";
+      }
+    });
     $("restartTodayBtn").addEventListener("click", resetAll);
 
     updateHeader();
