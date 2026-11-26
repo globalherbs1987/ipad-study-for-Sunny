@@ -321,6 +321,38 @@
     .dot.filled {
       background: var(--sage);
     }
+    .dot.corrected {
+      background: var(--amber);
+    }
+    .explain-card {
+      margin-top: 20px;
+      background: var(--paper);
+      border: 1.5px solid rgba(16, 185, 129, 0.28);
+      border-radius: 18px;
+      padding: 18px 20px;
+      text-align: left;
+    }
+    .explain-head {
+      font-size: 15px;
+      font-weight: 700;
+      color: #065F46;
+      margin-bottom: 10px;
+    }
+    .explain-line {
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .explain-shortcut {
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: var(--amber-soft);
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #92400E;
+    }
     .dot.current {
       width: 26px;
       background: var(--ink);
@@ -845,15 +877,15 @@
 
     <!-- 第一关：三年级极简口算 -->
     <section class="card" id="stage1">
-      <h1 class="card-title-hidden">第一关：口算连对 10 题挑战</h1>
+      <h1 class="card-title-hidden">第一关：三年级口算 10 题闯关</h1>
       <div class="card-top">
-        <span class="eyebrow" id="mathTagLabel">第一关 · 连续答对 10 题过关</span>
+        <span class="eyebrow" id="mathTagLabel">第一关 · 共 10 道口算题（第 1 / 10 题）</span>
         <div class="progress-dots" id="mathDots"></div>
       </div>
 
       <div class="math-stage" id="mathArena">
         <div class="math-expr" id="mathExpr">48 + 37</div>
-        <div class="math-input-row">
+        <div class="math-input-row" id="mathInputRow">
           <input
             id="mathInput"
             class="clean-num-input"
@@ -865,9 +897,17 @@
           />
           <button class="btn btn-primary" id="mathSubmitBtn" type="button">提交答案</button>
         </div>
-        <div class="subtle-rule">按键盘回车键可直接提交 · 答错 1 题连击归零</div>
+        <div class="subtle-rule" id="mathRuleHint">共 10 道题 · 按键盘回车键可直接提交</div>
       </div>
       <div class="feedback" id="mathFeedback"></div>
+      <div class="explain-card hidden" id="mathExplainCard">
+        <div class="explain-head" id="mathExplainHead">✓ 改对了！来看这道题的算法：</div>
+        <div class="explain-line" id="mathExplainMethod"></div>
+        <div class="explain-shortcut hidden" id="mathExplainShortcut"></div>
+        <div style="margin-top:14px; text-align:right;">
+          <button class="btn btn-primary" id="mathNextBtn" type="button" style="padding:10px 22px; font-size:14.5px;">明白了，下一题 →</button>
+        </div>
+      </div>
     </section>
 
     <!-- 第二关：厚海原版英语朗读 -->
@@ -3483,6 +3523,12 @@
       mathStreak: 0,
       mathResets: 0,
       mathWrongList: [],
+      mathDotStates: [],
+      mathCurrentHadError: false,
+      mathAwaitingNext: false,
+      mathHintTip: "",
+      mathMethodText: "",
+      mathShortcutText: "",
       mathTarget: 0,
       mathOpText: "",
       mathLastType: "",
@@ -3524,6 +3570,7 @@
           mathStreak: state.mathStreak,
           mathResets: state.mathResets,
           mathWrongList: state.mathWrongList,
+          mathDotStates: state.mathDotStates,
           readingAttempts: state.readingAttempts,
           readingSeconds: state.readingSeconds,
           transcript: state.transcript,
@@ -3646,38 +3693,126 @@
       $("stage4").classList.toggle("hidden", state.stage !== 4);
     }
 
-    // ---------- 第一关：北京小学三年级标准口算 ----------
+    // ---------- 第一关：北京小学三年级标准口算（固定 10 题 + 错题做对后讲方法与巧算） ----------
     function renderMathDots() {
       const box = $("mathDots");
       box.innerHTML = "";
       for (let i = 0; i < 10; i++) {
         const dot = document.createElement("span");
-        dot.className = "dot" + (i < state.mathStreak ? " filled" : (i === state.mathStreak ? " current" : ""));
+        if (i < state.mathStreak) {
+          dot.className = "dot " + (state.mathDotStates[i] === "corrected" ? "corrected" : "filled");
+        } else if (i === state.mathStreak) {
+          dot.className = "dot current";
+        } else {
+          dot.className = "dot";
+        }
         box.appendChild(dot);
+      }
+    }
+
+    function buildAdditionCoaching(a, b, ans) {
+      const a0 = Math.floor(a / 10) * 10, a1 = a % 10;
+      const b0 = Math.floor(b / 10) * 10, b1 = b % 10;
+      const method = `正确方法：按位拆开算，先算整十 ${a0} + ${b0} = ${a0 + b0}，再算个位 ${a1} + ${b1} = ${a1 + b1}，合起来 ${a0 + b0} + ${a1 + b1} = ${ans}。`;
+      let shortcut = "";
+      if (a1 + b1 === 10) {
+        shortcut = `简便巧算（个位凑十）：个位 ${a1} + ${b1} 刚好凑成 10！直接用 ${a0} + ${b0} + 10 = ${ans}，一眼出答案。`;
+      } else if (a1 >= 8) {
+        const up = a0 + 10;
+        const diff = up - a;
+        shortcut = `简便巧算（凑整法）：${a} 离 ${up} 只差 ${diff}，从 ${b} 里分出 ${diff} 给它凑整，变成 ${up} + ${b - diff} = ${ans}（或先算 ${up} + ${b} = ${up + b}，再减 ${diff}）。`;
+      } else if (b1 >= 8) {
+        const up = b0 + 10;
+        const diff = up - b;
+        shortcut = `简便巧算（凑整法）：${b} 离 ${up} 只差 ${diff}，先算 ${a} + ${up} = ${a + up}，再减去多加的 ${diff}，立得 ${ans}。`;
+      }
+      const hint = a1 + b1 >= 10 ? "注意个位相加满 10 要向十位进 1 哦" : "把十位和个位分别对齐再加一加";
+      return { method, shortcut, hint };
+    }
+
+    function buildSubtractionCoaching(a, b, ans) {
+      const b0 = Math.floor(b / 10) * 10, b1 = b % 10;
+      const step1 = a - b0;
+      const method = `正确方法：分两步减不易错，先减整十 ${a} − ${b0} = ${step1}，再减个位 ${step1} − ${b1} = ${ans}。`;
+      let shortcut = "";
+      if (b1 >= 8) {
+        const up = b0 + 10;
+        const diff = up - b;
+        shortcut = `简便巧算（多减补回法）：${b} 很接近 ${up}，先算 ${a} − ${up} = ${a - up}，因为多减了 ${diff}，最后加回 ${diff} 得 ${ans}，不用退位借位！`;
+      } else if (a % 10 === b1 && b1 > 0) {
+        shortcut = `简便巧算（同尾相消）：两个数个位都是 ${b1}，个位相减直接归零，只算十位 ${Math.floor(a / 10) * 10} − ${b0} = ${ans}。`;
+      } else if (a % 10 < b1 && a % 10 > 0) {
+        const a1 = a % 10;
+        shortcut = `简便巧算（平十连减）：把个位 ${b1} 拆成 ${a1} 和 ${b1 - a1}，先算 ${a} − ${b0 + a1} = ${a - b0 - a1} 凑成整十，再减 ${b1 - a1} = ${ans}。`;
+      }
+      const hint = (a % 10) < b1 ? "个位不够减，记得向十位借 1 当 10 再减哦" : "先减去整十数，再减去个位数试试";
+      return { method, shortcut, hint };
+    }
+
+    function buildMultiplyCoaching(a, b, ans) {
+      const a0 = Math.floor(a / 10) * 10, a1 = a % 10;
+      const method = `正确方法：把 ${a} 拆成 ${a0} 和 ${a1} 分别乘 ${b}：先算 ${a0} × ${b} = ${a0 * b}，再算 ${a1} × ${b} = ${a1 * b}，相加 ${a0 * b} + ${a1 * b} = ${ans}。`;
+      let shortcut = "";
+      if (b === 5 && a % 2 === 0) {
+        shortcut = `简便巧算（乘 5 折半添 0）：偶数乘 5 时，把 ${a} 除以 2 折半得 ${a / 2}，末尾直接添一个 0 就是 ${ans}！`;
+      } else if (a === 25 && b % 4 === 0) {
+        shortcut = `简便巧算（25 找 4 凑百）：记住黄金搭档 25 × 4 = 100，${b === 4 ? "直接得 100" : `把 ${b} 拆成 4 × ${b / 4}，先算 25 × 4 = 100 再乘 ${b / 4} = ${ans}`}！`;
+      } else if (a === 15 && b % 2 === 0) {
+        shortcut = `简便巧算（拆 2 凑整）：把 ${b} 拆成 2 × ${b / 2}，先算 15 × 2 = 30，再算 30 × ${b / 2} = ${ans}！`;
+      } else if (a1 === 9) {
+        const up = a0 + 10;
+        shortcut = `简便巧算（凑整减一）：把 ${a} 看成 ${up} − 1，先算 ${up} × ${b} = ${up * b}，再减去 1 × ${b} = ${b}，得 ${ans}。`;
+      }
+      return { method, shortcut, hint: `把 ${a} 拆成整十数 ${a0} 和个位数 ${a1}，分别乘 ${b} 再合起来` };
+    }
+
+    function buildMixedCoaching(isMul, a, b, c, ans) {
+      if (isMul) {
+        const prod = a * b;
+        const method = `正确方法：混合运算先算乘法、后算加法！先算 ${a} × ${b} = ${prod}，再算 ${prod} + ${c} = ${ans}。`;
+        let shortcut = "";
+        if ((prod % 10) + (c % 10) === 10) {
+          shortcut = `简便巧算：算出 ${a} × ${b} = ${prod} 后，发现个位 ${prod % 10} + ${c % 10} = 10 刚好凑整十，直接口算得 ${ans}！`;
+        } else if (c % 10 >= 8) {
+          const up = Math.ceil(c / 10) * 10;
+          shortcut = `简便巧算：算出 ${prod} 后，${c} 接近 ${up}，先算 ${prod} + ${up} = ${prod + up}，再减 ${up - c} = ${ans}。`;
+        }
+        return { method, shortcut, hint: `运算顺序口诀：先算乘法 ${a} × ${b}，再把结果加上 ${c}` };
+      } else {
+        const quot = a / b;
+        const method = `正确方法：混合运算先算除法、后算加法！想口诀 ${b} × ${quot} = ${a} 得出 ${a} ÷ ${b} = ${quot}，再算 ${quot} + ${c} = ${ans}。`;
+        let shortcut = "";
+        if ((quot % 10) + (c % 10) === 10) {
+          shortcut = `简便巧算：先算 ${a} ÷ ${b} = ${quot}，个位 ${quot} 和 ${c % 10} 刚好凑成 10，合起来就是 ${ans}！`;
+        }
+        return { method, shortcut, hint: `先背乘法口诀算出 ${a} ÷ ${b} 等于几，再加上 ${c}` };
       }
     }
 
     function nextMathQuestion() {
       const mode = Math.floor(Math.random() * 5);
-      let a, b, c, expr, ans, tag;
+      let a, b, c, expr, ans, tag, coach;
       if (mode === 0) {
         a = Math.floor(Math.random() * 65) + 24;
         b = Math.floor(Math.random() * 65) + 18;
         expr = `${a} + ${b}`;
         ans = a + b;
         tag = "进位加法";
+        coach = buildAdditionCoaching(a, b, ans);
       } else if (mode === 1) {
         a = Math.floor(Math.random() * 55) + 42;
         b = Math.floor(Math.random() * (a - 18)) + 14;
         expr = `${a} − ${b}`;
         ans = a - b;
         tag = "退位减法";
+        coach = buildSubtractionCoaching(a, b, ans);
       } else if (mode === 2) {
         a = Math.floor(Math.random() * 24) + 12;
         b = Math.floor(Math.random() * 7) + 2;
         expr = `${a} × ${b}`;
         ans = a * b;
         tag = "两位数乘一位数";
+        coach = buildMultiplyCoaching(a, b, ans);
       } else if (mode === 3) {
         a = Math.floor(Math.random() * 7) + 3;
         b = Math.floor(Math.random() * 7) + 3;
@@ -3685,6 +3820,7 @@
         expr = `${a} × ${b} + ${c}`;
         ans = a * b + c;
         tag = "乘加混合";
+        coach = buildMixedCoaching(true, a, b, c, ans);
       } else {
         b = Math.floor(Math.random() * 7) + 2;
         const q = Math.floor(Math.random() * 8) + 2;
@@ -3693,11 +3829,23 @@
         expr = `${a} ÷ ${b} + ${c}`;
         ans = q + c;
         tag = "除加混合";
+        coach = buildMixedCoaching(false, a, b, c, ans);
       }
       state.mathTarget = ans;
       state.mathOpText = expr;
       state.mathLastType = tag;
-      $("mathTagLabel").textContent = `第一关 · 连续答对 10 题（当前 ${state.mathStreak}/10）`;
+      state.mathCurrentHadError = false;
+      state.mathAwaitingNext = false;
+      state.mathMethodText = coach.method;
+      state.mathShortcutText = coach.shortcut;
+      state.mathHintTip = coach.hint;
+
+      $("mathExplainCard").classList.add("hidden");
+      $("mathInputRow").classList.remove("hidden");
+      $("mathRuleHint").classList.remove("hidden");
+      $("mathInput").disabled = false;
+      $("mathSubmitBtn").disabled = false;
+      $("mathTagLabel").textContent = `第一关 · 共 10 道口算题（第 ${Math.min(state.mathStreak + 1, 10)} / 10 题）`;
       $("mathExpr").textContent = `${expr} =`;
       $("mathInput").value = "";
       $("mathInput").focus();
@@ -3705,45 +3853,96 @@
       updateNav();
     }
 
+    function proceedAfterMathExplain() {
+      if (!state.mathAwaitingNext) return;
+      state.mathAwaitingNext = false;
+      $("mathExplainCard").classList.add("hidden");
+      $("mathFeedback").className = "feedback";
+      if (state.mathStreak >= 10) {
+        playTone("win");
+        state.stage = 2;
+        saveSessionCheckpoint();
+        initStage2();
+      } else {
+        nextMathQuestion();
+      }
+    }
+
     function submitMath() {
       if (state.transitionLock || state.stage !== 1) return;
+      if (state.mathAwaitingNext) {
+        proceedAfterMathExplain();
+        return;
+      }
       const raw = $("mathInput").value.replace(/[^\d-]/g, "").trim();
       if (raw === "") return;
       const num = parseInt(raw, 10);
       if (isNaN(num)) return;
       const fb = $("mathFeedback");
+
       if (num === state.mathTarget) {
+        const hadErr = state.mathCurrentHadError;
+        state.mathDotStates[state.mathStreak] = hadErr ? "corrected" : "filled";
         state.mathStreak++;
-        playTone("ok");
-        fb.className = "feedback show ok";
-        fb.textContent = `正确 · 连对 ${state.mathStreak} / 10`;
         saveSessionCheckpoint();
-        if (state.mathStreak >= 10) {
-          state.transitionLock = true;
-          renderMathDots();
-          playTone("win");
-          setTimeout(() => {
-            state.transitionLock = false;
-            state.stage = 2;
-            saveSessionCheckpoint();
-            initStage2();
-          }, 420);
+        renderMathDots();
+        updateNav();
+
+        if (hadErr) {
+          // 刚才做错过、现在自己改对了：展示标准方法 + 简便巧算讲解，点“明白了”再进下一题
+          playTone("ok");
+          fb.className = "feedback";
+          $("mathExpr").textContent = `${state.mathOpText} = ${state.mathTarget}`;
+          $("mathInputRow").classList.add("hidden");
+          $("mathRuleHint").classList.add("hidden");
+          $("mathExplainHead").textContent = `✓ 自己改对啦！${state.mathOpText} = ${state.mathTarget}`;
+          $("mathExplainMethod").textContent = state.mathMethodText;
+          const scEl = $("mathExplainShortcut");
+          if (state.mathShortcutText) {
+            scEl.textContent = `💡 ${state.mathShortcutText}`;
+            scEl.classList.remove("hidden");
+          } else {
+            scEl.classList.add("hidden");
+          }
+          $("mathNextBtn").textContent = state.mathStreak >= 10 ? "明白了，进入原版朗读 →" : "明白了，下一题 →";
+          $("mathExplainCard").classList.remove("hidden");
+          state.mathAwaitingNext = true;
+          setTimeout(() => $("mathNextBtn").focus(), 40);
         } else {
-          nextMathQuestion();
+          // 一次做对：不打断节奏，直接顺滑进下一题
+          playTone("ok");
+          fb.className = "feedback show ok";
+          fb.textContent = `正确 · 已完成 ${state.mathStreak} / 10`;
+          if (state.mathStreak >= 10) {
+            state.transitionLock = true;
+            playTone("win");
+            setTimeout(() => {
+              state.transitionLock = false;
+              state.stage = 2;
+              saveSessionCheckpoint();
+              initStage2();
+            }, 420);
+          } else {
+            nextMathQuestion();
+          }
         }
       } else {
-        state.mathResets++;
+        // 答错：不重置题号、不换题、不直接给答案，引导孩子重算当前题
+        if (!state.mathCurrentHadError) {
+          state.mathCurrentHadError = true;
+          state.mathResets++;
+        }
         state.mathWrongList.push(`${state.mathOpText}=${num}(应为${state.mathTarget})`);
-        state.mathStreak = 0;
         saveSessionCheckpoint();
         playTone("err");
         const arena = $("mathArena");
         arena.classList.remove("shake");
         void arena.offsetWidth;
         arena.classList.add("shake");
+        $("mathInput").value = "";
+        $("mathInput").focus();
         fb.className = "feedback show err";
-        fb.textContent = `${state.mathOpText} = ${state.mathTarget} · 连击已归零，深呼吸再来一组`;
-        nextMathQuestion();
+        fb.textContent = `得数 ${num} 不太对哦，再仔细算一遍这道题！（小提示：${state.mathHintTip}）`;
       }
     }
 
@@ -4390,7 +4589,7 @@
         : "累计高频易错词：暂无（盲拼准确率 100%）";
 
       const recentRows = state.historyLogs.slice(-5).reverse().map(log =>
-        `<div class="history-item"><span>${log.date} · ${log.day}</span><span>口算归零 ${log.mathResets} 次 · 朗读 ${log.readingSeconds}s</span></div>`
+        `<div class="history-item"><span>${log.date} · ${log.day}</span><span>口算错 ${log.mathResets} 题 · 朗读 ${log.readingSeconds}s</span></div>`
       ).join("") || `<div style="padding:4px 0; color:var(--ink-muted);">完成首日闯关后，这里会自动累计每日历史记录</div>`;
 
       return `
@@ -4402,7 +4601,7 @@
           <div class="kpi-box"><div class="kpi-val">${totalLogs}</div><div class="kpi-lbl">累计打卡(次)</div></div>
           <div class="kpi-box"><div class="kpi-val">${doneCount}</div><div class="kpi-lbl">已通课次</div></div>
           <div class="kpi-box"><div class="kpi-val">${masteredWords}</div><div class="kpi-lbl">已掌握新词</div></div>
-          <div class="kpi-box"><div class="kpi-val">${avgResets}</div><div class="kpi-lbl">场均口算归零</div></div>
+          <div class="kpi-box"><div class="kpi-val">${avgResets}</div><div class="kpi-lbl">场均口算错题</div></div>
         </div>
         <div style="font-size:12.5px; color:var(--ink-secondary); margin-bottom:8px;">${weakLine}</div>
         <div class="history-list">${recentRows}</div>
@@ -4460,7 +4659,7 @@
 
       $("finalReportBox").innerHTML = `
         <div class="report-row"><span class="report-key">完成日期与课次</span><span class="report-val">${payload.date} · ${payload.day} (${payload.unit})</span></div>
-        <div class="report-row"><span class="report-key">三年级口算 10 连对</span><span class="report-val">已通过（中途归零 ${payload.mathResets} 次）</span></div>
+        <div class="report-row"><span class="report-key">三年级口算（共 10 题）</span><span class="report-val">全部完成（错题订正 ${payload.mathResets} 题）</span></div>
         <div class="report-row"><span class="report-key">厚海原版朗读与理解</span><span class="report-val">已通过（用时 ${payload.readingSeconds} 秒 · 理解错 ${payload.quizWrongCount} 次）</span></div>
         <div class="report-row"><span class="report-key">今日掌握核心词</span><span class="report-val">${payload.newWords}</span></div>
         <div class="report-row"><span class="report-key">盲拼准确度记录</span><span class="report-val">${payload.vocabErrors}</span></div>
@@ -4471,7 +4670,7 @@
       state.lastReportText = [
         `【每日闯关学情战报】${payload.date} | ${payload.day} ${payload.unit}`,
         `- 累计完成总进度：${state.completedDays.length} / 47 关（累计打卡 ${state.historyLogs.length} 次）`,
-        `- 口算10连对：重置 ${payload.mathResets} 次（错题：${payload.mathWrong}）`,
+        `- 口算10题：错题订正 ${payload.mathResets} 题（错题：${payload.mathWrong}）`,
         `- 课文朗读：用时 ${payload.readingSeconds} 秒，尝试 ${payload.readingAttempts} 次，理解题错 ${payload.quizWrongCount} 次`,
         `- 新学单词：${payload.newWords}`,
         `- 盲拼记录：${payload.vocabErrors}`
@@ -4585,6 +4784,9 @@
       state.mathStreak = 0;
       state.mathResets = 0;
       state.mathWrongList = [];
+      state.mathDotStates = [];
+      state.mathCurrentHadError = false;
+      state.mathAwaitingNext = false;
       state.readingAttempts = 0;
       state.readingSeconds = 0;
       state.quizWrongCount = 0;
@@ -4622,6 +4824,7 @@
             state.mathStreak = snap.mathStreak || 0;
             state.mathResets = snap.mathResets || 0;
             state.mathWrongList = Array.isArray(snap.mathWrongList) ? snap.mathWrongList : [];
+            state.mathDotStates = Array.isArray(snap.mathDotStates) ? snap.mathDotStates : [];
             state.readingAttempts = snap.readingAttempts || 0;
             state.readingSeconds = snap.readingSeconds || 0;
             state.transcript = snap.transcript || "";
@@ -4648,6 +4851,8 @@
 
     $("mathSubmitBtn").addEventListener("click", submitMath);
     $("mathInput").addEventListener("keydown", e => { if (e.key === "Enter") submitMath(); });
+    $("mathNextBtn").addEventListener("click", proceedAfterMathExplain);
+    $("mathNextBtn").addEventListener("keydown", e => { if (e.key === "Enter") proceedAfterMathExplain(); });
     $("recToggleBtn").addEventListener("click", toggleRecording);
     $("recToggleBtn").addEventListener("touchend", toggleRecording, { passive: false });
     $("recFallbackBtn").addEventListener("click", finishRecordingNow);
